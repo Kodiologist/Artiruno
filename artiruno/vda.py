@@ -59,7 +59,23 @@ def vda(criteria, alts, asker, goal):
         item_space if goal == Goal.RANK_SPACE else alts))
     focus = None
 
-    while to_try and (goal != Goal.FIND_BEST or len(prefs.maxes(alts)) != 1):
+    while goal != Goal.FIND_BEST or len(prefs.maxes(alts)) != 1:
+
+        # Don't ask about pairs we already know.
+        to_try = {x for x in to_try if prefs.cmp(*x) == UN}
+
+        if goal == Goal.FIND_BEST:
+            # Don't compare alternatives that can't be the best.
+            not_best = {x
+                for x in alts
+                if any(prefs.cmp(x, a) == LT for a in alts)}
+            to_try = {(a, b)
+                for a, b in to_try
+                if a not in not_best and b not in not_best}
+
+        if not to_try:
+            break
+
         a, b = max(to_try, key = lambda pair: (focus in pair, pair))
         to_try.remove((a, b))
 
