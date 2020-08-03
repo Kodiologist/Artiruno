@@ -6,9 +6,9 @@ Goal = enum.Enum('Goal', 'FIND_BEST RANK_ALTS RANK_SPACE')
 
 def vda(criteria, alts, asker, goal):
     """
-- `criteria` specifies how many levels each criterion has.
-  We assume that higher levels are better, and represent each
-  as an integer, starting from 0.
+- `criteria` is an iterable of iterables specifying the levels of
+  each criterion. With a criterion, we assume that later levels are
+  better.
 - `alts` is a list of the alternatives, each represented
   as a tuple of the criteria.
 - `asker` should be a callable object f(a, b) that returns
@@ -18,11 +18,11 @@ def vda(criteria, alts, asker, goal):
 
     assert isinstance(goal, Goal)
     assert all(
-        type(n) is int and n >= 0
-        for n in criteria)
+        len(c) > 0 and len(c) == len(set(c))
+        for c in criteria)
     assert all(
         len(a) == len(criteria) and all(
-            type(a[i]) is int and 0 <= a[i] < criteria[i]
+            a[i] in criteria[i]
             for i in range(len(a)))
         for a in alts)
 
@@ -30,17 +30,20 @@ def vda(criteria, alts, asker, goal):
       # Return a vector in the item space that deviates from the best
       # possible item on the given criterion with the given value.
         return tuple(
-           value if i == criterion else n - 1
-           for i, n in enumerate(criteria))
+           value if i == criterion else c[-1]
+           for i, c in enumerate(criteria))
 
     # Define the user's preferences as a PKTPS, with a < b if `b` is
     # preferred to `a`. We initialize it with the assumption that on
     # any single criterion, bigger values are better.
-    item_space = list(itertools.product(*(range(n) for n in criteria)))
+    item_space = list(itertools.product(*criteria))
     prefs = PKTPS(item_space)
     for a, b in choose2(item_space):
-        if sum(x != y for x, y in zip(a, b)) == 1:
-            prefs.learn(a, b, cmp(a, b))
+        if sum(l := [x != y for x, y in zip(a, b)]) == 1:
+            ci = l.index(True)
+            prefs.learn(a, b, cmp(
+                criteria[ci].index(a[ci]),
+                criteria[ci].index(b[ci])))
 
     def get_pref(a, b):
         if (rel := prefs.cmp(a, b)) is not None:

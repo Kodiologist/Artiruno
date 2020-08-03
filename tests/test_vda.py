@@ -6,16 +6,12 @@ from artiruno.util import cmp, choose2
 def test_appendixD():
     # Appendix D of Larichev and Moshkovich (1995).
 
-    criteria = [3, 3, 3]
+    criteria = [(3,2,1)] * 3
     alts = [(1,2,3), (2,3,1), (3,1,2)]
     dm_ranking = [(2,1,1), (1,1,2), (1,2,1), (1,3,1), (3,1,1), (1,1,3)]
     def dm_asker(a, b):
         assert {a, b}.issubset(dm_ranking)
-        return cmp(dm_ranking.index(a), dm_ranking.index(b))
-
-    # Translate to 0-based, greater-is-better.
-    alts = [tuple(3 - n for n in v) for v in alts]
-    dm_ranking = [tuple(3 - n for n in v) for v in reversed(dm_ranking)]
+        return -cmp(dm_ranking.index(a), dm_ranking.index(b))
 
     Proposal1, Proposal2, Proposal3 = alts
 
@@ -28,7 +24,7 @@ def test_appendixD():
         assert prefs.maxes(among = alts) == {Proposal2}
         if goal == Goal.RANK_SPACE:
             for v1, v2 in choose2(dm_ranking):
-                assert prefs.cmp(v1, v2) == cmp(
+                assert prefs.cmp(v1, v2) == -cmp(
                     dm_ranking.index(v1), dm_ranking.index(v2))
         if goal != Goal.FIND_BEST:
             assert prefs.cmp(Proposal2, Proposal1) == GT
@@ -37,7 +33,7 @@ def test_appendixD():
 
 def test_lexicographic():
 
-    criteria = [3, 3, 3]
+    criteria = [(0, 1, 2)] * 3
     alts = [
       # I think I got these items from a paper, but now I've forgotten
       # which. D'oh.
@@ -64,3 +60,40 @@ def test_lexicographic():
     prefs = p(lambda a, b: cmp(a, b))
     assert prefs.maxes() == {(2, 2, 2)}
     assert prefs.maxes(among = alts) == {(2, 2, 0)}
+
+def test_simple_strings():
+
+    criteria = [['bad', 'good'], ['expensive', 'cheap']]
+    alts = [
+        ('bad', 'cheap'), ('good', 'expensive'),
+        ('bad', 'expensive')]
+
+    def asker(a, b):
+       # We prefer good to bad, but when that criterion is the same,
+       # we prefer cheap to expensive.
+        if a[0] == b[0]:
+            if a[1] == b[1]:
+                return EQ
+            elif a[1] == 'cheap':
+                return GT
+            else:
+                return LT
+        elif a[0] == 'good':
+            return GT
+        else:
+            return LT
+
+    for goal in (Goal.FIND_BEST, Goal.RANK_SPACE):
+        prefs = vda(
+            criteria = criteria,
+            alts = alts,
+            asker = asker,
+            goal = goal)
+        assert prefs.maxes(among = alts) == {('good', 'expensive')}
+        if goal == Goal.RANK_SPACE:
+            assert prefs.maxes() == {('good', 'cheap')}
+            ranking = (
+                ('bad', 'expensive'), ('bad', 'cheap'),
+                ('good', 'expensive'), ('good', 'cheap'))
+            for (ai, a), (bi, b) in choose2(enumerate(ranking)):
+                assert prefs.cmp(a, b) == cmp(ai, bi)
