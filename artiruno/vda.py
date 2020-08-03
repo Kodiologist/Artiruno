@@ -17,9 +17,11 @@ def vda(criteria, alts, asker, goal):
     0 (EQ) if they're equally good"""
 
     assert isinstance(goal, Goal)
+    criteria = tuple(map(tuple, criteria))
     assert all(
         len(c) > 0 and len(c) == len(set(c))
         for c in criteria)
+    alts = tuple(map(tuple, alts))
     assert all(
         len(a) == len(criteria) and all(
             a[i] in criteria[i]
@@ -33,10 +35,10 @@ def vda(criteria, alts, asker, goal):
            value if i == criterion else c[-1]
            for i, c in enumerate(criteria))
 
-    # Define the user's preferences as a PKTPS, with a < b if `b` is
+    # Define the user's preferences as a PKTPS, with `a < b` if `b` is
     # preferred to `a`. We initialize it with the assumption that on
     # any single criterion, bigger values are better.
-    item_space = list(itertools.product(*criteria))
+    item_space = tuple(itertools.product(*criteria))
     prefs = PKTPS(item_space)
     for a, b in choose2(item_space):
         if sum(l := [x != y for x, y in zip(a, b)]) == 1:
@@ -79,8 +81,8 @@ def vda(criteria, alts, asker, goal):
 
         if goal == Goal.FIND_BEST:
             focus = (
-                b if prefs.cmp(a, b) == -1 else
-                a if prefs.cmp(a, b) == 1 else
+                a if prefs.cmp(a, b) == GT else
+                b if prefs.cmp(a, b) == LT else
                 focus)
 
     return prefs
