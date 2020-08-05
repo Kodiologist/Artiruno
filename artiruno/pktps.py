@@ -85,26 +85,10 @@ class PKTPS:
 
     def _update(self):
         # Expand the known relations into their transitive closure.
-        changed = True
-        while changed:
-            changed = False
-            for (a, b, r1), (c, d, r2) in choose2(
-                    simprel(a, b, r)
-                    for (a, b), r in self.relations.items()
-                    if r != UN):
-                if r1 == r2 == LT:
-                    if b == c or a == d:
-                        changed = changed or self.set(
-                            a if b == c else c,
-                            d if b == c else b,
-                            LT)
-                elif {a, b} & {c, d}:
-                    if r1 != EQ:
-                        ((a, b), r1), ((c, d), r2) = ((c, d), r2), ((a, b), r1)
-                    changed = changed or self.set(
-                        b if c == a else a if c == b else c,
-                        b if d == a else a if d == b else d,
-                        r2)
+        for k, i, j in itertools.product(*(3 * [self.elements])):
+            r1, r2 = self.cmp(i, k), self.cmp(k, j)
+            if (r1 != UN and r2 == EQ) or (r1 == LT == r2):
+                self.set(i, j, r1)
 
     def _summary(self):
         return " ".join(
