@@ -88,24 +88,23 @@ class PKTPS:
         changed = True
         while changed:
             changed = False
-            items = [simprel(a, b, r)
-                for (a, b), r in self.relations.items()
-                if r != UN]
-            for (a, b, r1), (c, d, r2) in (
-                   (i1, i2)
-                   for i1 in items for i2 in items
-                   if i1 != i2):
+            for (a, b, r1), (c, d, r2) in choose2(
+                    simprel(a, b, r)
+                    for (a, b), r in self.relations.items()
+                    if r != UN):
                 if r1 == r2 == LT:
-                    if b == c:
-                        changed = changed or self.set(a, d, LT)
-                else:
-                    if {a, b} & {c, d}:
-                        if r1 != EQ:
-                            ((a, b), r1), ((c, d), r2) = ((c, d), r2), ((a, b), r1)
+                    if b == c or a == d:
                         changed = changed or self.set(
-                            b if c == a else a if c == b else c,
-                            b if d == a else a if d == b else d,
-                            r2)
+                            a if b == c else c,
+                            d if b == c else b,
+                            LT)
+                elif {a, b} & {c, d}:
+                    if r1 != EQ:
+                        ((a, b), r1), ((c, d), r2) = ((c, d), r2), ((a, b), r1)
+                    changed = changed or self.set(
+                        b if c == a else a if c == b else c,
+                        b if d == a else a if d == b else d,
+                        r2)
 
     def _summary(self):
         return " ".join(
