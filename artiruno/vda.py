@@ -48,11 +48,8 @@ def vda(criteria, alts, asker, goal):
                 criteria[ci].index(b[ci])))
 
     def get_pref(a, b):
-        if (rel := prefs.cmp(a, b)) is not None:
-            return rel
-        rel = asker(a, b)
-        assert rel in (LT, EQ, GT)
-        prefs.learn(a, b, rel)
+        if (rel := prefs.cmp(a, b)) is None:
+            prefs.learn(a, b, rel := asker(a, b))
         return rel
 
     to_try = set(choose2(

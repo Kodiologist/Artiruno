@@ -50,7 +50,7 @@ class PKTPS:
 
     def set(self, a, b, rel):
       # Returns true if a change was made.
-        assert rel != UN
+        assert rel in (LT, EQ, GT)
 
         if a == b:
              assert a in self.elements
