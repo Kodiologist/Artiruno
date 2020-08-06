@@ -34,8 +34,7 @@ class PKTPS:
         if a == b:
             assert a in self.elements
             return EQ
-        k = (a, b) if a <= b else (b, a)
-        return self.relations[k] if a <= b else invert_rel(self.relations[k])
+        return self.relations[a, b] if a < b else invert_rel(self.relations[b, a])
 
     def extrema(self, among = None, mins = False):
         return frozenset(x
