@@ -73,7 +73,7 @@ class PKTPS:
 
     def learn(self, a, b, rel):
         if changed := self.set(a, b, rel):
-            self._update()
+            self._update(a, b)
         return changed
 
     def get_subset(self, elements):
@@ -83,9 +83,11 @@ class PKTPS:
             for (a, b), r in self.relations.items()
             if {a, b}.issubset(elements)})
 
-    def _update(self):
-        # Expand the known relations into their transitive closure.
-        for k, i, j in itertools.product(*(3 * [self.elements])):
+    def _update(self, a, b):
+        # Use a modification of Warshall's algorithm to update the transitive
+        # closure.
+        # https://web.archive.org/web/2013/https://cs.winona.edu/lin/cs440/ch08-2.pdf
+        for k, i, j in itertools.product((a, b), self.elements, self.elements):
             r1, r2 = self.cmp(i, k), self.cmp(k, j)
             if (r1 != UN and r2 == EQ) or (r1 == LT == r2):
                 self.set(i, j, r1)
