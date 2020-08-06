@@ -28,13 +28,6 @@ def vda(criteria, alts, asker, goal):
             for i in range(len(a)))
         for a in alts)
 
-    def dev_from_ref(criterion, value):
-      # Return a vector in the item space that deviates from the best
-      # possible item on the given criterion with the given value.
-        return tuple(
-           value if i == criterion else c[-1]
-           for i, c in enumerate(criteria))
-
     # Define the user's preferences as a PKTPS, with `a < b` if `b` is
     # preferred to `a`. We initialize it with the assumption that on
     # any single criterion, bigger values are better.
@@ -51,6 +44,13 @@ def vda(criteria, alts, asker, goal):
         if (rel := prefs.cmp(a, b)) is None:
             prefs.learn(a, b, rel := asker(a, b))
         return rel
+
+    def dev_from_ref(criterion, value):
+      # Return a vector in the item space that deviates from the best
+      # possible item on the given criterion with the given value.
+        return tuple(
+           value if i == criterion else c[-1]
+           for i, c in enumerate(criteria))
 
     to_try = set(choose2(
         item_space if goal == Goal.RANK_SPACE else alts))
