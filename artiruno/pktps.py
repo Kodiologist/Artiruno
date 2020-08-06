@@ -55,7 +55,7 @@ class PKTPS:
         if a == b:
              assert a in self.elements
              if rel != EQ:
-                 raise ContradictionError(k, EQ, rel)
+                 raise ContradictionError((a, b), EQ, rel)
              return False
 
         k = (a, b)

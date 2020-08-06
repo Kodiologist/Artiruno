@@ -8,6 +8,8 @@ def test_simple():
     assert x._summary() == "0<1"
     with pytest.raises(ContradictionError):
         x.learn(1, 0, LT)
+    with pytest.raises(ContradictionError):
+        x.learn(0, 0, LT)
 
     x = PKTPS(range(2))
     x.learn(1, 0, EQ)
