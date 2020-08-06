@@ -11,10 +11,6 @@ def invert_rel(rel):
         GT if rel == LT else
         rel)
 
-def simprel(a, b, rel):
-    # Re-express GT relations as LT.
-    return (b, a, LT) if rel == GT else (a, b, rel)
-
 class ContradictionError(Exception):
     def __init__(self, k, was, claimed):
         super().__init__("{}: known to be {}, now claimed to be {}".format(k, was, claimed))
@@ -93,7 +89,7 @@ class PKTPS:
         return " ".join(
             "{}{}{}".format(a, {EQ: "=", LT: "<"}[rel], b)
             for a, b, rel in sorted(
-                simprel(a, b, rel)
+                (b, a, LT) if rel == GT else (a, b, rel)
                 for (a, b), rel in self.relations.items()
                 if rel != UN))
 
