@@ -21,6 +21,8 @@ def test_trans():
     x.learn("a", "b", LT)
     x.learn("c", "b", GT)
     assert x._summary() == "a<b a<c b<c"
+    with pytest.raises(ContradictionError):
+        x.learn("c", "a", LT)
 
 def test_long_trans():
     x = PKTPS(set(range(20)) - {10})
