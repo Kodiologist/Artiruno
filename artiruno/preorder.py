@@ -1,9 +1,8 @@
-"Partly known totally preordered sets."
-
 import itertools
 from artiruno.util import choose2
 
-UN, LT, EQ, GT = None, -1, 0, 1
+IC, LT, EQ, GT = None, -1, 0, 1
+  # The types of relations: incomparable, less than, equivalent, greater than
 
 def invert_rel(rel):
     return (
@@ -15,12 +14,14 @@ class ContradictionError(Exception):
     def __init__(self, k, was, claimed):
         super().__init__("{}: known to be {}, now claimed to be {}".format(k, was, claimed))
 
-class PKTPS:
-    "Partly known totally preordered set."
+class PreorderedSet:
+    '''A set equipped with a preorder. The set of elements is regarded
+    as fixed, whereas the order can be updated to make previously
+    incomparable elements comparable.'''
 
     def __init__(self, elements, relations = None):
         self.elements = frozenset(elements)
-        self.relations = relations or {(a, b): UN
+        self.relations = relations or {(a, b): IC
             for a, b in choose2(sorted(self.elements))}
 
     def copy(self):
@@ -58,7 +59,7 @@ class PKTPS:
         if b < a:
            k, rel = (b, a), invert_rel(rel)
 
-        if self.relations[k] == UN:
+        if self.relations[k] == IC:
             self.relations[k] = rel
             return True
         elif self.relations[k] == rel:
@@ -67,6 +68,9 @@ class PKTPS:
             raise ContradictionError(k, self.relations[k], rel)
 
     def learn(self, a, b, rel):
+        '''Update the ordering. Raises ContradictionError if the new
+        assertion isn't consistent with the preexisting non-IC
+        relations.'''
         if not self._set(a, b, rel):
             return False
         # Use a modification of Warshall's algorithm to update the transitive
@@ -74,7 +78,7 @@ class PKTPS:
         # https://web.archive.org/web/2013/https://cs.winona.edu/lin/cs440/ch08-2.pdf
         for k, i, j in itertools.product((a, b), self.elements, self.elements):
             r1, r2 = self.cmp(i, k), self.cmp(k, j)
-            if (r1 != UN and r2 == EQ) or (r1 == LT == r2):
+            if (r1 != IC and r2 == EQ) or (r1 == LT == r2):
                 self._set(i, j, r1)
         return True
 
@@ -91,7 +95,7 @@ class PKTPS:
             for a, b, rel in sorted(
                 (b, a, LT) if rel == GT else (a, b, rel)
                 for (a, b), rel in self.relations.items()
-                if rel != UN))
+                if rel != IC))
 
     def graph(self):
         import subprocess

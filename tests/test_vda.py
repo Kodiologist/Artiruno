@@ -1,5 +1,5 @@
 import itertools
-from artiruno.pktps import UN, LT, EQ, GT
+from artiruno.preorder import IC, LT, EQ, GT
 from artiruno.vda import vda, Goal
 from artiruno.util import cmp, choose2
 

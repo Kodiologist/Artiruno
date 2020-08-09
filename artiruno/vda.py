@@ -1,5 +1,5 @@
 import itertools, math, enum
-from artiruno.pktps import PKTPS, UN, LT, EQ, GT
+from artiruno.preorder import PreorderedSet, IC, LT, EQ, GT
 from artiruno.util import cmp, choose2
 
 Goal = enum.Enum('Goal', 'FIND_BEST RANK_ALTS RANK_SPACE')
@@ -28,11 +28,12 @@ def vda(criteria, alts, asker, goal):
             for i in range(len(a)))
         for a in alts)
 
-    # Define the user's preferences as a PKTPS, with `a < b` if `b` is
-    # preferred to `a`. We initialize it with the assumption that on
-    # any single criterion, bigger values are better.
+    # Define the user's preferences as a preorder, with `a < b` if `b`
+    # is preferred to `a`, and `a` and `b` incomparable if the user's
+    # preference isn't yet known. We initialize it with the assumption
+    # that on any single criterion, bigger values are better.
     item_space = tuple(itertools.product(*criteria))
-    prefs = PKTPS(item_space)
+    prefs = PreorderedSet(item_space)
     for a, b in choose2(item_space):
         if sum(l := [x != y for x, y in zip(a, b)]) == 1:
             ci = l.index(True)
@@ -59,7 +60,7 @@ def vda(criteria, alts, asker, goal):
     while not (goal == Goal.FIND_BEST and len(prefs.maxes(alts)) == 1):
 
         # Don't ask about pairs we already know.
-        to_try = {x for x in to_try if prefs.cmp(*x) == UN}
+        to_try = {x for x in to_try if prefs.cmp(*x) == IC}
 
         if goal == Goal.FIND_BEST:
             # Don't compare alternatives that can't be the best.
