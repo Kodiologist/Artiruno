@@ -1,6 +1,10 @@
 Artiruno is an in-progress Python package for performing verbal decision analysis (VDA) in the manner of ZAPROS (Larichev & Moshkovich, 1995) and UniComBOS (Ashikhmin & Furems, 2005). VDA is a class of decision-support software for multiple-criteria decision-making that doesn't ask the user for explicit preference functions or criterion weights. Instead, the user is asked questions such as "Which of these two items would you prefer?". VDA doesn't always produce a total order for the alternatives, but the weaker assumptions made about what people are capable of accurately judging helps to ensure that results aren't contaminated by arbitrary choices of numbers and functions.
 
+In ``artiruno.preorder``, Artiruno provides a class for `preordered sets`_ that should be just as useful outside the context of decision-making.
+
 The test suite uses ``pytest``. To run it, just use the command ``pytest``.
+
+.. _`preordered sets`: https://en.wikipedia.org/wiki/Preorder
 
 License
 ============================================================
