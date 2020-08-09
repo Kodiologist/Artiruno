@@ -44,7 +44,7 @@ class PKTPS:
     def mins(self, among = None):
         return self.extrema(among, mins = True)
 
-    def set(self, a, b, rel):
+    def _set(self, a, b, rel):
       # Returns true if a change was made.
         assert rel in (LT, EQ, GT)
 
@@ -67,7 +67,7 @@ class PKTPS:
             raise ContradictionError(k, self.relations[k], rel)
 
     def learn(self, a, b, rel):
-        if not self.set(a, b, rel):
+        if not self._set(a, b, rel):
             return False
         # Use a modification of Warshall's algorithm to update the transitive
         # closure.
@@ -75,7 +75,7 @@ class PKTPS:
         for k, i, j in itertools.product((a, b), self.elements, self.elements):
             r1, r2 = self.cmp(i, k), self.cmp(k, j)
             if (r1 != UN and r2 == EQ) or (r1 == LT == r2):
-                self.set(i, j, r1)
+                self._set(i, j, r1)
         return True
 
     def get_subset(self, elements):
