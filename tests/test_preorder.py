@@ -86,6 +86,16 @@ def test_extrema():
     assert x.maxes() == {2, 3}
     assert x.maxes(among = {0, 1, 3}) == {3}
 
+def test_get_subset():
+    x = PreorderedSet(("a", "b1", "b2", "c", "d"), (
+        ("a", "b1", LT), ("a", "b2", LT),
+        ("b1", "c", LT), ("b2", "c", LT),
+        ("c", "d", LT)))
+    y = x.get_subset(("a", "b2", "d"))
+    assert x._summary() == "a<b1 a<b2 a<c a<d b1<c b1<d b2<c b2<d c<d"
+    assert y.elements == {"a", "b2", "d"}
+    assert y._summary() == "a<b2 a<d b2<d"
+
 
 def graph_example():
     x = test_complex()
