@@ -19,13 +19,16 @@ class PreorderedSet:
     as fixed, whereas the order can be updated to make previously
     incomparable elements comparable.'''
 
-    def __init__(self, elements, relations = None):
+    def __init__(self, elements, relations = (), raw_relations = None):
         self.elements = frozenset(elements)
-        self.relations = relations or {(a, b): IC
+        self.relations = raw_relations or {(a, b): IC
             for a, b in choose2(sorted(self.elements))}
+        for a, b, rel in relations:
+            self.learn(a, b, rel)
 
     def copy(self):
-        return type(self)(self.elements, self.relations.copy())
+        return type(self)(self.elements,
+            raw_relations = self.relations.copy())
 
     def cmp(self, a, b):
         if a == b:
@@ -85,7 +88,7 @@ class PreorderedSet:
     def get_subset(self, elements):
         elements = frozenset(elements)
         assert elements.issubset(self.elements)
-        return type(self)(elements, {(a, b): r
+        return type(self)(elements, raw_relations = {(a, b): r
             for (a, b), r in self.relations.items()
             if {a, b}.issubset(elements)})
 

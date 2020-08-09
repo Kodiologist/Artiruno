@@ -17,12 +17,15 @@ def test_simple():
 
 def test_trans():
     x = PreorderedSet("abc")
-
     x.learn("a", "b", LT)
     x.learn("c", "b", GT)
-    assert x._summary() == "a<b a<c b<c"
-    with pytest.raises(ContradictionError):
-        x.learn("c", "a", LT)
+
+    y = PreorderedSet("abc", [["a", "b", LT], ["c", "b", GT]])
+
+    for s in x, y:
+        assert s._summary() == "a<b a<c b<c"
+        with pytest.raises(ContradictionError):
+            s.learn("c", "a", LT)
 
 def test_long_trans():
     x = PreorderedSet(set(range(20)) - {10})
