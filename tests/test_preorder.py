@@ -1,4 +1,4 @@
-from artiruno.preorder import PreorderedSet, IC, LT, EQ, GT, ContradictionError
+from artiruno import PreorderedSet, IC, LT, EQ, GT, ContradictionError
 import pytest
 
 def test_simple():

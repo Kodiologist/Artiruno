@@ -1,7 +1,5 @@
 import itertools
-from artiruno.preorder import IC, LT, EQ, GT
-from artiruno.vda import vda, Goal
-from artiruno.util import cmp, choose2
+from artiruno import IC, LT, EQ, GT, vda, Goal, cmp, choose2
 
 def test_appendixD():
     # Appendix D of Larichev and Moshkovich (1995).
