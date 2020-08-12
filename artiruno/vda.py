@@ -17,29 +17,8 @@ def vda(criteria, alts, asker, goal):
     0 (EQ) if they're equally good"""
 
     assert isinstance(goal, Goal)
-    criteria = tuple(map(tuple, criteria))
-    assert all(
-        len(c) > 0 and len(c) == len(set(c))
-        for c in criteria)
-    alts = tuple(map(tuple, alts))
-    assert all(
-        len(a) == len(criteria) and all(
-            a[i] in criteria[i]
-            for i in range(len(a)))
-        for a in alts)
 
-    # Define the user's preferences as a preorder, with `a < b` if `b`
-    # is preferred to `a`, and `a` and `b` incomparable if the user's
-    # preference isn't yet known. We initialize it with the assumption
-    # that on any single criterion, bigger values are better.
-    item_space = tuple(itertools.product(*criteria))
-    prefs = PreorderedSet(item_space)
-    for a, b in choose2(item_space):
-        if sum(l := [x != y for x, y in zip(a, b)]) == 1:
-            ci = l.index(True)
-            prefs.learn(a, b, cmp(
-                criteria[ci].index(a[ci]),
-                criteria[ci].index(b[ci])))
+    criteria, alts, item_space, prefs = _setup(criteria, alts)
 
     def get_pref(a, b):
         if (rel := prefs.cmp(a, b)) is None:
@@ -100,3 +79,32 @@ def vda(criteria, alts, asker, goal):
                 focus)
 
     return prefs
+
+def _setup(criteria, alts):
+    "Some initial VDA logic put into its own function so it can be tested separately."
+
+    criteria = tuple(map(tuple, criteria))
+    assert all(
+        len(c) > 0 and len(c) == len(set(c))
+        for c in criteria)
+    alts = tuple(map(tuple, alts))
+    assert all(
+        len(a) == len(criteria) and all(
+            a[i] in criteria[i]
+            for i in range(len(a)))
+        for a in alts)
+
+    # Define the user's preferences as a preorder, with `a < b` if `b`
+    # is preferred to `a`, and `a` and `b` incomparable if the user's
+    # preference isn't yet known. We initialize it with the assumption
+    # that on any single criterion, bigger values are better.
+    item_space = tuple(itertools.product(*criteria))
+    prefs = PreorderedSet(item_space)
+    for a, b in choose2(item_space):
+        if sum(l := [x != y for x, y in zip(a, b)]) == 1:
+            ci = l.index(True)
+            prefs.learn(a, b, cmp(
+                criteria[ci].index(a[ci]),
+                criteria[ci].index(b[ci])))
+
+    return criteria, alts, item_space, prefs
