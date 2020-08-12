@@ -1,5 +1,21 @@
 import itertools
+import artiruno
 from artiruno import IC, LT, EQ, GT, vda, Goal, cmp, choose2
+
+def test_assumptions():
+    # Test the preferences that we should assume purely from the
+    # criteria definitions, without having asked the user anything
+    # yet.
+
+    *_, prefs = artiruno.m.vda._setup(
+        criteria = ['abcd', ('bad', 'okay', 'good')],
+        alts = [])
+
+    assert prefs.cmp(('a', 'bad'), ('c', 'bad')) == LT
+    assert prefs.cmp(('a', 'okay'), ('a', 'good')) == LT
+    assert prefs.cmp(('d', 'good'), ('a', 'bad')) == GT
+    assert prefs.cmp(('c', 'okay'), ('b', 'bad')) == GT
+    assert prefs.cmp(('b', 'good'), ('c', 'okay')) == IC
 
 def test_appendixD():
     # Appendix D of Larichev and Moshkovich (1995).
