@@ -96,6 +96,18 @@ def test_get_subset():
     assert y.elements == {"a", "b2", "d"}
     assert y._summary() == "a<b2 a<d b2<d"
 
+def test_add():
+    x = PreorderedSet()
+    x.add('a')
+    x.add('z')
+    assert x.cmp('a', 'z') == IC
+    x.learn('a', 'z', LT)
+    assert x.cmp('a', 'z') == LT
+    x.add('f')
+    x.learn('f', 'a', LT)
+    assert x.cmp('f', 'a') == LT
+    assert x.cmp('f', 'z') == LT
+
 
 def graph_example():
     x = test_complex()

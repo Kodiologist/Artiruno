@@ -15,20 +15,27 @@ class ContradictionError(Exception):
         super().__init__("{}: known to be {}, now claimed to be {}".format(k, was, claimed))
 
 class PreorderedSet:
-    '''A set equipped with a preorder. The set of elements is regarded
-    as fixed, whereas the order can be updated to make previously
+    '''A set equipped with a preorder. Elements can be added to
+    the set, and the order can be updated to make previously
     incomparable elements comparable.'''
 
-    def __init__(self, elements, relations = (), raw_relations = None):
-        self.elements = frozenset(elements)
+    def __init__(self, elements = (), relations = (), raw_relations = None):
+        self.elements = set(elements)
         self.relations = raw_relations or {(a, b): IC
             for a, b in choose2(sorted(self.elements))}
         for a, b, rel in relations:
             self.learn(a, b, rel)
 
     def copy(self):
-        return type(self)(self.elements,
+        return type(self)(self.elements.copy(),
             raw_relations = self.relations.copy())
+
+    def add(self, x):
+        if x in self.elements:
+            return
+        for a in self.elements:
+            self.relations[(a, x) if a < x else (x, a)] = IC
+        self.elements.add(x)
 
     def cmp(self, a, b):
         if a == b:
