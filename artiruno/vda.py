@@ -4,7 +4,7 @@ from artiruno.util import cmp, choose2
 
 Goal = enum.Enum('Goal', 'FIND_BEST RANK_ALTS RANK_SPACE')
 
-def vda(criteria, alts, asker, goal):
+def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
     """
 - `criteria` is an iterable of iterables specifying the levels of
   each criterion. With a criterion, we assume that later levels are
@@ -16,11 +16,10 @@ def vda(criteria, alts, asker, goal):
     LT (-1) if b is better
     0 (EQ) if they're equally good"""
 
-    assert isinstance(goal, Goal)
-
-    criteria, alts, item_space, prefs = _setup(criteria, alts)
+    criteria, alts, prefs = _setup(criteria, alts, goal)
 
     def get_pref(a, b):
+        add_items(criteria, prefs, [a, b])
         if (rel := prefs.cmp(a, b)) is None:
             prefs.learn(a, b, rel := asker(a, b))
         return rel
@@ -32,8 +31,7 @@ def vda(criteria, alts, asker, goal):
            value if i == criterion else c[-1]
            for i, c in enumerate(criteria))
 
-    to_try = set(choose2(
-        item_space if goal == Goal.RANK_SPACE else alts))
+    to_try = set(choose2(alts))
     focus = None
 
     while not (goal == Goal.FIND_BEST and len(prefs.maxes(alts)) == 1):
@@ -80,31 +78,43 @@ def vda(criteria, alts, asker, goal):
 
     return prefs
 
-def _setup(criteria, alts):
+def _setup(criteria = (), alts = (), goal = Goal.FIND_BEST):
     "Some initial VDA logic put into its own function so it can be tested separately."
+
+    assert isinstance(goal, Goal)
 
     criteria = tuple(map(tuple, criteria))
     assert all(
         len(c) > 0 and len(c) == len(set(c))
         for c in criteria)
-    alts = tuple(map(tuple, alts))
-    assert all(
-        len(a) == len(criteria) and all(
-            a[i] in criteria[i]
-            for i in range(len(a)))
-        for a in alts)
+
+    if goal == Goal.RANK_SPACE:
+        alts = tuple(itertools.product(*criteria))
+    else:
+        alts = tuple(map(tuple, alts))
+        assert all(
+            len(a) == len(criteria) and all(
+                a[i] in criteria[i]
+                for i in range(len(a)))
+            for a in alts)
 
     # Define the user's preferences as a preorder, with `a < b` if `b`
     # is preferred to `a`, and `a` and `b` incomparable if the user's
-    # preference isn't yet known. We initialize it with the assumption
-    # that on any single criterion, bigger values are better.
-    item_space = tuple(itertools.product(*criteria))
-    prefs = PreorderedSet(item_space)
-    for a, b in choose2(item_space):
-        if sum(l := [x != y for x, y in zip(a, b)]) == 1:
-            ci = l.index(True)
-            prefs.learn(a, b, cmp(
-                criteria[ci].index(a[ci]),
-                criteria[ci].index(b[ci])))
+    # preference isn't yet known.
+    prefs = PreorderedSet()
+    add_items(criteria, prefs, alts)
 
-    return criteria, alts, item_space, prefs
+    return criteria, alts, prefs
+
+def add_items(criteria, prefs, items):
+    # Enforce the assumption that on any single criterion, bigger
+    # values are better.
+    for x in items:
+        if x not in prefs.elements:
+            prefs.add(x)
+            for a in prefs.elements:
+                if sum(l := [e1 != e2 for e1, e2 in zip(x, a)]) == 1:
+                    ci = l.index(True)
+                    prefs.learn(x, a, cmp(
+                        criteria[ci].index(x[ci]),
+                        criteria[ci].index(a[ci])))

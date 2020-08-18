@@ -9,7 +9,7 @@ def test_assumptions():
 
     *_, prefs = artiruno.m.vda._setup(
         criteria = ['abcd', ('bad', 'okay', 'good')],
-        alts = [])
+        goal = Goal.RANK_SPACE)
 
     assert prefs.cmp(('a', 'bad'), ('c', 'bad')) == LT
     assert prefs.cmp(('a', 'okay'), ('a', 'good')) == LT
@@ -111,3 +111,21 @@ def test_simple_strings():
                 ('good', 'expensive'), ('good', 'cheap'))
             for (ai, a), (bi, b) in choose2(enumerate(ranking)):
                 assert prefs.cmp(a, b) == cmp(ai, bi)
+
+def test_big_item_space():
+    n_criteria = 10
+    n_levels = 20
+
+    criteria = [list(range(n_levels))] * n_criteria
+    alts = [[n_levels - 1] * n_criteria for _ in range(2)]
+    alts[0][3] = 15
+    alts[0][6] = 14
+    alts[1][7] = 8
+    alts[1][9] = 4
+
+    prefs = vda(
+        criteria = criteria,
+        alts = alts,
+        asker = cmp,
+        goal = Goal.FIND_BEST)
+    assert prefs.cmp(tuple(alts[0]), tuple(alts[1])) == LT
