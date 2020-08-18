@@ -7,7 +7,7 @@ Goal = enum.Enum('Goal', 'FIND_BEST RANK_ALTS RANK_SPACE')
 def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
     """
 - `criteria` is an iterable of iterables specifying the levels of
-  each criterion. With a criterion, we assume that later levels are
+  each criterion. Within a criterion, we assume that later levels are
   better.
 - `alts` is a list of the alternatives, each represented
   as a tuple of the criteria.
