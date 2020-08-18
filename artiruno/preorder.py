@@ -32,7 +32,7 @@ class PreorderedSet:
 
     def cmp(self, a, b):
         if a == b:
-            assert a in self.elements
+            assert a in self.elements and b in self.elements
             return EQ
         return self.relations[a, b] if a < b else invert_rel(self.relations[b, a])
 
