@@ -129,3 +129,49 @@ def test_big_item_space():
         asker = cmp,
         goal = Goal.FIND_BEST)
     assert prefs.cmp(tuple(alts[0]), tuple(alts[1])) == LT
+
+def test_conclusivity(diag):
+
+    # These criteria and alternatives are from Ashikhmin and Furems
+    # (2005).
+    criteria = (
+        (1700, 1550, 1450, 1300),
+        ('DVO', 'SVO-2'),
+        ('0000', '0800', '1435', '1100'))
+    alts = [
+        (1550, 'SVO-2', '0800'),
+        (1450, 'SVO-2', '1435'),
+        (1300, 'DVO', '0000'),
+        (1700, 'DVO', '1100')]
+
+    # Look at what Artiruno concludes (i.e., the obtained maximum from
+    # Goal.FIND_BEST) from every possible sequence of LT and GT
+    # choices.
+    queue = [(LT,), (GT,)]
+    def asker(a, b):
+        nonlocal i
+        i += 1
+        if i == len(queue[0]):
+            queue.append(queue[0] + (GT,))
+            queue[0] += (LT,)
+        return queue[0][i]
+    maxes = {}
+    while queue:
+        i = -1
+        prefs = vda(
+            criteria = criteria,
+            alts = alts,
+            goal = Goal.FIND_BEST,
+            asker = asker)
+        maxes[queue[0]] = prefs.maxes(alts)
+        queue.pop(0)
+
+    if diag:
+        from collections import Counter
+        print('Number of questions required:',
+            Counter(len(k) for k in maxes))
+        print('Maxima:', Counter(v for v in maxes.values()))
+
+    # Every sequence of LT or GT choices should lead to a single best
+    # item.
+    assert all(len(v) == 1 for v in maxes.values())
