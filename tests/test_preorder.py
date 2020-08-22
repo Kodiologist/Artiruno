@@ -65,7 +65,6 @@ def test_complex():
     assert x._summary() == "a<b a<c a<w a<y a<z b<c b=w b<y b<z w<c w<y w<z x<y x<z y<z"
 
     y.learn("b", "y", EQ)
-    print(y.cmp("b", "z"))
     assert y._summary() == "a<b a<c a<w a<y a<z b<c b=w b=y b<z w<c w=y w<z x<b x<c x<w x<y x<z y<c y<z"
 
     return x
