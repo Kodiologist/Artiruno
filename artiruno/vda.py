@@ -31,7 +31,14 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
            value if i == criterion else c[-1]
            for i, c in enumerate(criteria))
 
-    to_try = set(choose2(alts))
+    def num_item(item):
+      # Represent criterion values as integers. This prevents us from
+      # behaving differently depending on the default sort order of
+      # the criterion values. (We're still sensitive to the order of
+      # criteria, though.)
+        return tuple(criteria[i].index(v) for i, v in enumerate(item))
+
+    to_try = set(choose2(sorted(alts, key = num_item)))
     focus = None
 
     while not (goal == Goal.FIND_BEST and len(prefs.maxes(alts)) == 1):
@@ -51,7 +58,8 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
         if not to_try:
             break
 
-        a, b = max(to_try, key = lambda pair: (focus in pair, pair))
+        a, b = max(to_try, key = lambda pair: (
+            (focus in pair, num_item(pair[0]), num_item(pair[1]))))
         to_try.remove((a, b))
 
         result = {}

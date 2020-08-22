@@ -1,4 +1,4 @@
-import itertools
+import random, itertools
 import artiruno
 from artiruno import IC, LT, EQ, GT, vda, Goal, cmp, choose2
 
@@ -130,48 +130,82 @@ def test_big_item_space():
         goal = Goal.FIND_BEST)
     assert prefs.cmp(tuple(alts[0]), tuple(alts[1])) == LT
 
-def test_conclusivity(diag):
+def all_choice_seqs(choices, criteria, alts):
 
-    # These criteria and alternatives are from Ashikhmin and Furems
-    # (2005).
-    criteria = (
-        (1700, 1550, 1450, 1300),
-        ('DVO', 'SVO-2'),
-        ('0000', '0800', '1435', '1100'))
-    alts = [
-        (1550, 'SVO-2', '0800'),
-        (1450, 'SVO-2', '1435'),
-        (1300, 'DVO', '0000'),
-        (1700, 'DVO', '1100')]
+    queue = [(c,) for c in choices]
+    result = []
 
-    # Look at what Artiruno concludes (i.e., the obtained maximum from
-    # Goal.FIND_BEST) from every possible sequence of LT and GT
-    # choices.
-    queue = [(LT,), (GT,)]
     def asker(a, b):
-        nonlocal i
-        i += 1
+        result[-1]['questions'].append((a, b))
+        i = len(result[-1]['questions'])
         if i == len(queue[0]):
-            queue.append(queue[0] + (GT,))
-            queue[0] += (LT,)
+            for c in choices[1:]:
+                queue.append(queue[0] + (c,))
+            queue[0] += (choices[0],)
         return queue[0][i]
-    maxes = {}
+
     while queue:
-        i = -1
+        result.append(dict(questions = []))
         prefs = vda(
             criteria = criteria,
             alts = alts,
             goal = Goal.FIND_BEST,
             asker = asker)
-        maxes[queue[0]] = prefs.maxes(alts)
+        result[-1]['maxes'] = prefs.maxes(alts)
         queue.pop(0)
+
+    return result
+
+def test_conclusivity(diag):
+    # Look at what Artiruno concludes (i.e., the obtained maximum from
+    # Goal.FIND_BEST) from every possible sequence of LT and GT
+    # choices, given a fixed set of criteria and alternatives
+
+    result = all_choice_seqs(
+        choices = (LT, GT),
+        # These criteria and alternatives are from Ashikhmin and
+        # Furems (2005).
+        criteria = (
+            (1700, 1550, 1450, 1300),
+            ('DVO', 'SVO-2'),
+            ('0000', '0800', '1435', '1100')),
+        alts = (
+            (1550, 'SVO-2', '0800'),
+            (1450, 'SVO-2', '1435'),
+            (1300, 'DVO', '0000'),
+            (1700, 'DVO', '1100')))
 
     if diag:
         from collections import Counter
         print('Number of questions required:',
-            Counter(len(k) for k in maxes))
-        print('Maxima:', Counter(v for v in maxes.values()))
+            Counter(len(r['questions']) for r in result))
+        print('Maxima:', Counter(r['maxes'] for r in result))
 
     # Every sequence of LT or GT choices should lead to a single best
     # item.
-    assert all(len(v) == 1 for v in maxes.values())
+    assert all(len(r['maxes']) == 1 for r in result)
+
+def test_recode_criteria():
+    # Renaming criterion values shouldn't change the questions asked
+    # or the results.
+
+    criteria = tuple(
+        tuple('abc'[i] + str(j) for j in range(3)) for i in range(3))
+    alts = (
+        ('a2', 'b2', 'c0'),
+        ('a2', 'b0', 'c2'),
+        ('a1', 'b1', 'c2'),
+        ('a2', 'b2', 'c0'),
+        ('a0', 'b0', 'c2'))
+
+    r1 = all_choice_seqs((LT, EQ, GT), criteria, alts)
+
+    crev = tuple(c[::-1] for c in criteria)
+    def revitem(item):
+        return tuple(crev[c][criteria[c].index(v)] for c, v in enumerate(item))
+    r2 = all_choice_seqs((LT, EQ, GT), crev, tuple(map(revitem, alts)))
+
+    for d1, d2 in zip(r1, r2):
+        assert d1['questions'] == [(revitem(a), revitem(b))
+            for a, b in d2['questions']]
+        assert d1['maxes'] == set(map(revitem, d2['maxes']))
