@@ -117,12 +117,14 @@ def _setup(criteria = (), alts = (), goal = Goal.FIND_BEST):
 def add_items(criteria, prefs, items):
     # Enforce the assumption that on any single criterion, bigger
     # values are better.
-    for x in items:
-        if x not in prefs.elements:
-            prefs.add(x)
-            for a in prefs.elements:
-                if sum(l := [e1 != e2 for e1, e2 in zip(x, a)]) == 1:
-                    ci = l.index(True)
-                    prefs.learn(x, a, cmp(
-                        criteria[ci].index(x[ci]),
-                        criteria[ci].index(a[ci])))
+    for x in set(items) - prefs.elements:
+        prefs.add(x)
+        for a in prefs.elements - {x}:
+            cmps = [
+                cmp(criteria[ci].index(x[ci]),
+                    criteria[ci].index(a[ci]))
+                for ci in range(len(criteria))]
+            if not (LT in cmps and GT in cmps):
+                # One item dominates the other. (We know that `cmps`
+                # isn't all EQ because `x` and `a` are different.)
+                prefs.learn(x, a, LT if LT in cmps else GT)

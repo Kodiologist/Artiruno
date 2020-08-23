@@ -1,4 +1,5 @@
 import random, itertools
+from collections import Counter
 import artiruno
 from artiruno import IC, LT, EQ, GT, vda, Goal, cmp, choose2
 
@@ -10,12 +11,16 @@ def test_assumptions():
     *_, prefs = artiruno.m.vda._setup(
         criteria = ['abcd', ('bad', 'okay', 'good')],
         goal = Goal.RANK_SPACE)
-
     assert prefs.cmp(('a', 'bad'), ('c', 'bad')) == LT
     assert prefs.cmp(('a', 'okay'), ('a', 'good')) == LT
     assert prefs.cmp(('d', 'good'), ('a', 'bad')) == GT
     assert prefs.cmp(('c', 'okay'), ('b', 'bad')) == GT
     assert prefs.cmp(('b', 'good'), ('c', 'okay')) == IC
+
+    *_, prefs = artiruno.m.vda._setup(
+        criteria = [range(3) for _ in range(3)],
+        alts = ((1, 1, 1), (2, 1, 2)))
+    assert prefs.cmp((1, 1, 1), (2, 1, 2)) == LT
 
 def test_appendixD():
     # Appendix D of Larichev and Moshkovich (1995).
@@ -175,15 +180,17 @@ def test_conclusivity(diag):
             (1300, 'DVO', '0000'),
             (1700, 'DVO', '1100')))
 
-    if diag:
-        from collections import Counter
-        print('Number of questions required:',
-            Counter(len(r['questions']) for r in result))
-        print('Maxima:', Counter(r['maxes'] for r in result))
-
     # Every sequence of LT or GT choices should lead to a single best
     # item.
     assert all(len(r['maxes']) == 1 for r in result)
+
+    # If changes to Artiruno result in having to ask less questions,
+    # change this test. Having to ask more questions is a regression.
+    assert (Counter(len(r['questions']) for r in result) ==
+        Counter({4: 16, 3: 4, 2: 2}))
+
+    if diag:
+        print('Maxima:', Counter(r['maxes'] for r in result))
 
 def test_recode_criteria():
     # Renaming criterion values shouldn't change the questions asked
