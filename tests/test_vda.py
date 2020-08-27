@@ -190,7 +190,7 @@ def test_conclusivity(diag):
     # If changes to Artiruno result in having to ask less questions,
     # change this test. Having to ask more questions is a regression.
     assert (Counter(len(r['questions']) for r in result) ==
-        Counter({4: 8, 3: 2, 2: 1}))
+        Counter({4: 6, 3: 3, 2: 1}))
 
     if diag:
         print('Maxima:', Counter(r['maxes'] for r in result))

@@ -63,6 +63,9 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
         to_try.remove((a, b))
 
         result = {}
+        cs = [ci
+            for ci in range(len(criteria))
+            if a[ci] != b[ci]]
         for v1, v2 in ((a, b), (b, a)):
             # Implement a strict version of the "rule of comparison"
             # from Larichev and Moshkovieh (1995), p. 506:
@@ -72,8 +75,8 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
             #   then yi ≮ yj (i.e., yj ≤ yi)
             ps = [
                 max(get_pref(dev_from_ref(c1, v1[c1]), dev_from_ref(c2, v2[c2]))
-                    for c2 in range(len(criteria)))
-                for c1 in range(len(criteria))]
+                    for c2 in cs)
+                for c1 in cs]
             result[v1, v2] = all(p in (EQ, GT) for p in ps) and GT in ps
         if sum(result.values()) == 1:
             learn(criteria, prefs, a, b, GT if result[a, b] else LT)
