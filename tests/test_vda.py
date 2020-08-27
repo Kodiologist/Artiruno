@@ -203,10 +203,9 @@ def test_recode_criteria():
         tuple('abc'[i] + str(j) for j in range(3)) for i in range(3))
     alts = (
         ('a2', 'b2', 'c0'),
-        ('a2', 'b0', 'c2'),
-        ('a1', 'b1', 'c2'),
-        ('a2', 'b2', 'c0'),
-        ('a0', 'b0', 'c2'))
+        ('a2', 'b0', 'c1'),
+        ('a1', 'b0', 'c2'),
+        ('a0', 'b2', 'c1'))
 
     r1 = all_choice_seqs((LT, EQ, GT), criteria, alts)
 

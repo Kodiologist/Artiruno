@@ -108,6 +108,7 @@ def _setup(criteria = (), alts = (), goal = Goal.FIND_BEST):
                 a[i] in criteria[i]
                 for i in range(len(a)))
             for a in alts)
+        assert len(alts) == len(set(alts))
 
     # Define the user's preferences as a preorder, with `a < b` if `b`
     # is preferred to `a`, and `a` and `b` incomparable if the user's
