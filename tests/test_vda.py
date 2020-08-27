@@ -137,6 +137,7 @@ def test_big_item_space():
 
 def all_choice_seqs(choices, criteria, alts):
 
+    alts = tuple(map(tuple, alts))
     queue = [(c,) for c in choices]
     result = []
 
@@ -154,8 +155,10 @@ def all_choice_seqs(choices, criteria, alts):
         prefs = vda(
             criteria = criteria,
             alts = alts,
-            goal = Goal.FIND_BEST,
-            asker = asker)
+            asker = asker,
+            goal = Goal.FIND_BEST)
+        result[-1]['choices'] = queue[0]
+        result[-1]['prefs'] = prefs
         result[-1]['maxes'] = prefs.maxes(alts)
         queue.pop(0)
 
@@ -216,3 +219,14 @@ def test_recode_criteria():
         assert d1['questions'] == [(revitem(a), revitem(b))
             for a, b in d2['questions']]
         assert d1['maxes'] == set(map(revitem, d2['maxes']))
+
+def test_irrelevant_criteria():
+    for d in all_choice_seqs(
+            (LT, EQ, GT),
+            criteria = ('ab', 'pq', 'xy'),
+            alts = ('aqx', 'apy')):
+        if set(map(tuple, ('aqx', 'apy', 'bqx', 'bpy'))) <= d['prefs'].elements:
+            cmps = [
+               d['prefs'].cmp(tuple(a), tuple(b))
+               for a, b in (('aqx', 'apy'), ('bqx', 'bpy'))]
+            assert cmps[0] == cmps[1]

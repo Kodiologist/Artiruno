@@ -21,7 +21,7 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
     def get_pref(a, b):
         add_items(criteria, prefs, [a, b])
         if (rel := prefs.cmp(a, b)) is None:
-            prefs.learn(a, b, rel := asker(a, b))
+            learn(criteria, prefs, a, b, rel := asker(a, b))
         return rel
 
     def dev_from_ref(criterion, value):
@@ -76,7 +76,7 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
                 for c1 in range(len(criteria))]
             result[v1, v2] = all(p in (EQ, GT) for p in ps) and GT in ps
         if sum(result.values()) == 1:
-            prefs.learn(a, b, GT if result[a, b] else LT)
+            learn(criteria, prefs, a, b, GT if result[a, b] else LT)
 
         if goal == Goal.FIND_BEST:
             focus = (
@@ -127,4 +127,18 @@ def add_items(criteria, prefs, items):
             if not (LT in cmps and GT in cmps):
                 # One item dominates the other. (We know that `cmps`
                 # isn't all EQ because `x` and `a` are different.)
-                prefs.learn(x, a, LT if LT in cmps else GT)
+                learn(criteria, prefs, x, a, LT if LT in cmps else GT)
+
+def learn(criteria, prefs, a0, b0, rel):
+    for a, b in prefs.learn(a0, b0, rel):
+      # For each pair of items that we just learned about, apply the
+      # rule of irrelevant criteria: the preference between two items
+      # that are equal on a criterion must be the same for all values
+      # of that criterion.
+        for c in range(len(criteria)):
+            if a[c] == b[c]:
+                for cv in (v for v in criteria[c] if v != a[c]):
+                    a2 = a[:c] + (cv,) + a[c + 1:]
+                    b2 = b[:c] + (cv,) + b[c + 1:]
+                    if a2 in prefs.elements and b2 in prefs.elements:
+                        prefs.learn(a2, b2, prefs.cmp(a, b))
