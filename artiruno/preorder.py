@@ -78,19 +78,21 @@ class PreorderedSet:
             raise ContradictionError(k, self.relations[k], rel)
 
     def learn(self, a, b, rel):
-        '''Update the ordering. Raises ContradictionError if the new
-        assertion isn't consistent with the preexisting non-IC
-        relations.'''
+        '''Update the ordering. Return a list of pairs that were updated.
+        Raise ContradictionError if the new assertion isn't consistent
+        with the preexisting non-IC relations.'''
         if not self._set(a, b, rel):
-            return False
+            return []
         # Use a modification of Warshall's algorithm to update the transitive
         # closure.
         # https://web.archive.org/web/2013/https://cs.winona.edu/lin/cs440/ch08-2.pdf
+        changed = [(a, b) if a < b else (b, a)]
         for k, i, j in itertools.product((a, b), self.elements, self.elements):
             r1, r2 = self.cmp(i, k), self.cmp(k, j)
             if (r1 != IC and r2 == EQ) or (r1 == LT == r2):
-                self._set(i, j, r1)
-        return True
+                if self._set(i, j, r1):
+                    changed.append((i, j) if i < j else (j, i))
+        return changed
 
     def get_subset(self, elements):
         elements = frozenset(elements)

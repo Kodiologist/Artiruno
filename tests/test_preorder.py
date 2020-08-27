@@ -107,6 +107,12 @@ def test_add():
     assert x.cmp('f', 'a') == LT
     assert x.cmp('f', 'z') == LT
 
+def test_learn_return_value():
+    x = PreorderedSet((1, 2, 3))
+    assert x.learn(1, 2, LT) == [(1, 2)]
+    assert x.learn(2, 3, LT) == [(2, 3), (1, 3)]
+    assert x.learn(1, 2, LT) == []
+
 
 def graph_example():
     x = test_complex()
