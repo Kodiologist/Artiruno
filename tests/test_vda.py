@@ -143,7 +143,7 @@ def all_choice_seqs(choices, criteria, alts):
 
     def asker(a, b):
         result[-1]['questions'].append((a, b))
-        i = len(result[-1]['questions'])
+        i = len(result[-1]['questions']) - 1
         if i == len(queue[0]):
             for c in choices[1:]:
                 queue.append(queue[0] + (c,))
@@ -190,7 +190,7 @@ def test_conclusivity(diag):
     # If changes to Artiruno result in having to ask less questions,
     # change this test. Having to ask more questions is a regression.
     assert (Counter(len(r['questions']) for r in result) ==
-        Counter({4: 16, 3: 4, 2: 2}))
+        Counter({4: 8, 3: 2, 2: 1}))
 
     if diag:
         print('Maxima:', Counter(r['maxes'] for r in result))
