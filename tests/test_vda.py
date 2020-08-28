@@ -214,10 +214,11 @@ def test_recode_criteria():
         return tuple(crev[c][criteria[c].index(v)] for c, v in enumerate(item))
     r2 = all_choice_seqs((LT, EQ, GT), crev, tuple(map(revitem, alts)))
 
+    assert len(r1) == len(r2)
     for d1, d2 in zip(r1, r2):
-        assert d1['questions'] == [(revitem(a), revitem(b))
-            for a, b in d2['questions']]
-        assert d1['maxes'] == set(map(revitem, d2['maxes']))
+        assert d2['questions'] == [(revitem(a), revitem(b))
+            for a, b in d1['questions']]
+        assert d2['maxes'] == set(map(revitem, d1['maxes']))
 
 def test_irrelevant_criteria():
     for d in all_choice_seqs(
