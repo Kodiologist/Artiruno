@@ -26,10 +26,12 @@ def test_appendixD():
     # Appendix D of Larichev and Moshkovich (1995).
 
     criteria = [(3,2,1)] * 3
+      # 3 is worst and 1 is best.
     alts = [(1,2,3), (2,3,1), (3,1,2)]
     dm_ranking = [(2,1,1), (1,1,2), (1,2,1), (1,3,1), (3,1,1), (1,1,3)]
-    def dm_asker(a, b):
-        assert {a, b}.issubset(dm_ranking)
+      # The first element is the best, so we negate `cmp` in the
+      # asker.
+    def asker(a, b):
         return -cmp(dm_ranking.index(a), dm_ranking.index(b))
 
     Proposal1, Proposal2, Proposal3 = alts
@@ -38,7 +40,7 @@ def test_appendixD():
         prefs = vda(
             criteria = criteria,
             alts = alts,
-            asker = dm_asker,
+            asker = asker,
             goal = goal)
         assert prefs.maxes(among = alts) == {Proposal2}
         if goal == Goal.RANK_SPACE:
