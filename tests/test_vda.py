@@ -228,7 +228,6 @@ def test_irrelevant_criteria():
             criteria = ('ab', 'pq', 'xy'),
             alts = ('aqx', 'apy')):
         if set(map(tuple, ('aqx', 'apy', 'bqx', 'bpy'))) <= d['prefs'].elements:
-            cmps = [
-               d['prefs'].cmp(tuple(a), tuple(b))
-               for a, b in (('aqx', 'apy'), ('bqx', 'bpy'))]
-            assert cmps[0] == cmps[1]
+            def p(a, b):
+                return d['prefs'].cmp(tuple(a), tuple(b))
+            assert p('aqx', 'apy') == p('bqx', 'bpy')
