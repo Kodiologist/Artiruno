@@ -2,6 +2,7 @@ import random, itertools
 from collections import Counter
 import artiruno
 from artiruno import IC, LT, EQ, GT, vda, Goal, cmp, choose2
+import pytest
 
 def test_assumptions():
     # Test the preferences that we should assume purely from the
@@ -137,7 +138,7 @@ def test_big_item_space():
         goal = Goal.FIND_BEST)
     assert prefs.cmp(tuple(alts[0]), tuple(alts[1])) == LT
 
-def all_choice_seqs(choices, criteria, alts):
+def all_choice_seqs(choices, criteria, alts = (), goal = Goal.FIND_BEST):
 
     alts = tuple(map(tuple, alts))
     queue = [(c,) for c in choices]
@@ -158,7 +159,7 @@ def all_choice_seqs(choices, criteria, alts):
             criteria = criteria,
             alts = alts,
             asker = asker,
-            goal = Goal.FIND_BEST)
+            goal = goal)
         result[-1]['choices'] = queue[0]
         result[-1]['prefs'] = prefs
         result[-1]['maxes'] = prefs.maxes(alts)
@@ -222,12 +223,12 @@ def test_recode_criteria():
             for a, b in d1['questions']]
         assert d2['maxes'] == set(map(revitem, d1['maxes']))
 
+@pytest.mark.slow
 def test_irrelevant_criteria():
     for d in all_choice_seqs(
             (LT, EQ, GT),
-            criteria = ('ab', 'pq', 'xy'),
-            alts = ('aqx', 'apy')):
-        if set(map(tuple, ('aqx', 'apy', 'bqx', 'bpy'))) <= d['prefs'].elements:
-            def p(a, b):
-                return d['prefs'].cmp(tuple(a), tuple(b))
-            assert p('aqx', 'apy') == p('bqx', 'bpy')
+            criteria = ('abc', 'pqr', 'xyz'),
+            goal = Goal.RANK_SPACE):
+        def p(a, b):
+            return d['prefs'].cmp(tuple(a), tuple(b))
+        assert p('aqx', 'apy') == p('bqx', 'bpy') == p('cqx', 'cpy')
