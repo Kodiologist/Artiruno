@@ -1,8 +1,12 @@
-import itertools, math, enum
+import itertools, functools, math, enum
 from artiruno.preorder import PreorderedSet, IC, LT, EQ, GT
 from artiruno.util import cmp, choose2
 
 Goal = enum.Enum('Goal', 'FIND_BEST RANK_ALTS RANK_SPACE')
+
+class Jump(Exception):
+    def __init__(self, value):
+        self.value = value
 
 def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
     """
@@ -62,24 +66,26 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
             (focus in pair, num_item(pair[0]), num_item(pair[1]))))
         to_try.remove((a, b))
 
-        result = {}
         cs = [ci
             for ci in range(len(criteria))
             if a[ci] != b[ci]]
-        for v1, v2 in ((a, b), (b, a)):
-            # Implement a strict version of the "rule of comparison"
-            # from Larichev and Moshkovieh (1995), p. 506:
-            #   For any vectors yi, yj,
-            #   if for each component yik of yi,
-            #     there exists yjp ∈ yj with yjp ≯ yik, (i.e., yjp ≤ yik)
-            #   then yi ≮ yj (i.e., yj ≤ yi)
-            ps = [
-                max(get_pref(dev_from_ref(c1, v1[c1]), dev_from_ref(c2, v2[c2]))
-                    for c2 in cs)
-                for c1 in cs]
-            result[v1, v2] = all(p in (EQ, GT) for p in ps) and GT in ps
-        if sum(result.values()) == 1:
-            learn(criteria, prefs, a, b, GT if result[a, b] else LT)
+        try:
+            # Implement a strict version of Statement 2 from Larichev
+            # and Moshkovieh (1995, p. 511).
+            def gp(c1, c2):
+                return get_pref(
+                    dev_from_ref(c1, a[c1]),
+                    dev_from_ref(c2, b[c2]))
+            def f(rel, cs1, cs2):
+                if not cs1:
+                    raise Jump(rel)
+                c1, *cs1 = cs1
+                for i_c2, c2 in enumerate(cs2):
+                   if rel == EQ or gp(c1, c2) in (EQ, rel):
+                        f(rel or gp(c1, c2), cs1, cs2[:i_c2] + cs2[i_c2 + 1:])
+            f(EQ, cs, cs)
+        except Jump as j:
+            learn(criteria, prefs, a, b, j.value)
 
         if goal == Goal.FIND_BEST:
             focus = (
