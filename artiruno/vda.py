@@ -134,15 +134,4 @@ def add_items(criteria, prefs, items):
                 learn(criteria, prefs, x, a, LT if LT in cmps else GT)
 
 def learn(criteria, prefs, a0, b0, rel):
-    for a, b in prefs.learn(a0, b0, rel):
-      # For each pair of items that we just learned about, apply the
-      # rule of irrelevant criteria: the preference between two items
-      # that are equal on a criterion must be the same for all values
-      # of that criterion.
-        for c in range(len(criteria)):
-            if a[c] == b[c]:
-                for cv in (v for v in criteria[c] if v != a[c]):
-                    a2 = a[:c] + (cv,) + a[c + 1:]
-                    b2 = b[:c] + (cv,) + b[c + 1:]
-                    if a2 in prefs.elements and b2 in prefs.elements:
-                        prefs.learn(a2, b2, prefs.cmp(a, b))
+    prefs.learn(a0, b0, rel)
