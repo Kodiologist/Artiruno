@@ -172,6 +172,17 @@ def test_irrelevant_criteria():
             return d['prefs'].cmp(tuple(a), tuple(b))
         assert p('aqx', 'apy') == p('bqx', 'bpy') == p('cqx', 'cpy')
 
+def test_lex_small():
+    'A scenario with lexicographic preferences.'
+    criteria = [(0, 1)] * 3
+    alts = [(1, 0, 0), (0, 1, 1)]
+    prefs = vda(
+        criteria = criteria, alts = alts,
+        asker = cmp,
+        goal = Goal.RANK_SPACE,
+        max_level = 2)
+    assert prefs.cmp(*alts) == cmp(*alts)
+
 def test_lex_big():
 
     criteria = [(0, 1, 2)] * 3
@@ -202,3 +213,40 @@ def test_lex_big():
     prefs = p(lambda a, b: cmp(a, b))
     assert prefs.maxes() == {(2, 2, 2)}
     assert prefs.maxes(among = alts) == {(2, 2, 0)}
+
+@pytest.mark.parametrize('criteria',
+    [(2,2,2), (3,2,2), (3,3,3), (2,) * 5, (5,) * 5])
+def test_lex_generalized(criteria, run_slow_tests):
+    '''Randomly generate alternatives and an underlying ranking for
+    the criteria. Check that the concluded preferences equal the
+    underlying preferences.'''
+
+    if criteria == (5,) * 5 and not run_slow_tests:
+        pytest.skip()
+
+    R = random.Random(criteria)
+    criteria = tuple(tuple(range(n)) for n in criteria)
+
+    criterion_order = []
+    def asker(a, b):
+        return cmp(*(
+            tuple(v[i] for i in criterion_order)
+            for v in (a, b)))
+
+    for trial in range(20):
+        alts = set()
+        n_alts = R.randint(2, 8)
+        while len(alts) < n_alts:
+            alts.add(tuple(map(R.choice, criteria)))
+        criterion_order = R.sample(range(len(criteria)), len(criteria))
+        goal = R.choice([Goal.FIND_BEST, Goal.RANK_ALTS])
+        prefs = vda(
+            criteria, alts, asker, goal, max_level = len(criteria))
+        if goal == Goal.FIND_BEST:
+            assert prefs.maxes(among = alts) == {
+                a
+                for a in alts
+                if all(prefs.cmp(a, b) in (GT, EQ) for b in alts)}
+        else:
+            for a, b in choose2(alts):
+                assert prefs.cmp(a, b) == asker(a, b)

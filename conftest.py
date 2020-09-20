@@ -23,3 +23,7 @@ def pytest_collection_modifyitems(config, items):
 @pytest.fixture
 def diag(request):
     return request.config.getoption('--diag')
+
+@pytest.fixture
+def run_slow_tests(request):
+    return request.config.getoption('--slow')
