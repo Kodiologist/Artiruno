@@ -53,36 +53,6 @@ def test_appendixD():
             assert prefs.cmp(Proposal2, Proposal3) == GT
             assert prefs.cmp(Proposal3, Proposal1) == GT
 
-def test_lexicographic():
-
-    criteria = [(0, 1, 2)] * 3
-    alts = [
-      # I think I got these items from a paper, but now I've forgotten
-      # which. D'oh.
-        (0, 1, 1),
-        (1, 1, 0),
-        (2, 0, 1),
-        (0, 2, 0),
-        (1, 0, 2),
-        (2, 1, 1),
-        (2, 1, 0),
-        (2, 2, 0),
-        (1, 0, 1)]
-
-    def p(a): return vda(
-        criteria = criteria,
-        alts = alts,
-        asker = a,
-        goal = Goal.FIND_BEST)
-
-    prefs = p(lambda a, b: cmp(a[::-1], b[::-1]))
-    assert prefs.maxes() == {(2, 2, 2)}
-    assert prefs.maxes(among = alts) == {(1, 0, 2)}
-
-    prefs = p(lambda a, b: cmp(a, b))
-    assert prefs.maxes() == {(2, 2, 2)}
-    assert prefs.maxes(among = alts) == {(2, 2, 0)}
-
 def test_simple_strings():
 
     criteria = [['bad', 'good'], ['expensive', 'cheap']]
@@ -232,3 +202,33 @@ def test_irrelevant_criteria():
         def p(a, b):
             return d['prefs'].cmp(tuple(a), tuple(b))
         assert p('aqx', 'apy') == p('bqx', 'bpy') == p('cqx', 'cpy')
+
+def test_lex_big():
+
+    criteria = [(0, 1, 2)] * 3
+    alts = [
+      # I think I got these items from a paper, but now I've forgotten
+      # which. D'oh.
+        (0, 1, 1),
+        (1, 1, 0),
+        (2, 0, 1),
+        (0, 2, 0),
+        (1, 0, 2),
+        (2, 1, 1),
+        (2, 1, 0),
+        (2, 2, 0),
+        (1, 0, 1)]
+
+    def p(a): return vda(
+        criteria = criteria,
+        alts = alts,
+        asker = a,
+        goal = Goal.FIND_BEST)
+
+    prefs = p(lambda a, b: cmp(a[::-1], b[::-1]))
+    assert prefs.maxes() == {(2, 2, 2)}
+    assert prefs.maxes(among = alts) == {(1, 0, 2)}
+
+    prefs = p(lambda a, b: cmp(a, b))
+    assert prefs.maxes() == {(2, 2, 2)}
+    assert prefs.maxes(among = alts) == {(2, 2, 0)}
