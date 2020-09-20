@@ -56,7 +56,7 @@ class PreorderedSet:
         return self.extrema(among, mins = True)
 
     def _set(self, a, b, rel):
-      # Returns true if a change was made.
+        'Return true if a change was made.'
         assert rel in (LT, EQ, GT)
 
         if a == b:

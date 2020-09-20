@@ -5,9 +5,9 @@ from artiruno import IC, LT, EQ, GT, vda, Goal, cmp, choose2
 import pytest
 
 def test_assumptions():
-    # Test the preferences that we should assume purely from the
-    # criteria definitions, without having asked the user anything
-    # yet.
+    '''Test the preferences that we should assume purely from the
+    criteria definitions, without having asked the user anything
+    yet.'''
 
     *_, prefs = artiruno.m.vda._setup(
         criteria = ['abcd', ('bad', 'okay', 'good')],
@@ -24,7 +24,7 @@ def test_assumptions():
     assert prefs.cmp((1, 1, 1), (2, 1, 2)) == LT
 
 def test_appendixD():
-    # Appendix D of Larichev and Moshkovich (1995).
+    '''Appendix D of Larichev and Moshkovich (1995).'''
 
     criteria = [(3,2,1)] * 3
       # 3 is worst and 1 is best.
@@ -138,8 +138,8 @@ def all_choice_seqs(choices, criteria, alts = (), goal = Goal.FIND_BEST):
     return result
 
 def test_recode_criteria():
-    # Renaming criterion values shouldn't change the questions asked
-    # or the results.
+    '''Renaming criterion values shouldn't change the questions asked
+    or the results.'''
 
     criteria = tuple(
         tuple('abc'[i] + str(j) for j in range(3)) for i in range(3))

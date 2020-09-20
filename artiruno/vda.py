@@ -32,17 +32,18 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_level
         return rel
 
     def dev_from_ref(dev_criteria, vector):
-      # Return a vector in the item space that deviates from the best
-      # possible item on the given criteria with the given values.
+        '''Return a vector in the item space that deviates from the
+        best possible item on the given criteria with the given
+        values.'''
         return tuple(
            vector[i] if i in dev_criteria else c[-1]
            for i, c in enumerate(criteria))
 
     def num_item(item):
-      # Represent criterion values as integers. This prevents us from
-      # behaving differently depending on the default sort order of
-      # the criterion values. (We're still sensitive to the order of
-      # criteria, though.)
+        '''Represent criterion values as integers. This prevents us
+        from behaving differently depending on the default sort order
+        of the criterion values. (We're still sensitive to the order
+        of criteria, though.)'''
         return tuple(criteria[i].index(v) for i, v in enumerate(item))
 
     focus = None
