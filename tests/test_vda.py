@@ -137,37 +137,6 @@ def all_choice_seqs(choices, criteria, alts = (), goal = Goal.FIND_BEST):
 
     return result
 
-def test_conclusivity(diag):
-    # Look at what Artiruno concludes (i.e., the obtained maximum from
-    # Goal.FIND_BEST) from every possible sequence of LT and GT
-    # choices, given a fixed set of criteria and alternatives
-
-    result = all_choice_seqs(
-        choices = (LT, GT),
-        # These criteria and alternatives are from Ashikhmin and
-        # Furems (2005).
-        criteria = (
-            (1700, 1550, 1450, 1300),
-            ('DVO', 'SVO-2'),
-            ('0000', '0800', '1435', '1100')),
-        alts = (
-            (1550, 'SVO-2', '0800'),
-            (1450, 'SVO-2', '1435'),
-            (1300, 'DVO', '0000'),
-            (1700, 'DVO', '1100')))
-
-    # Every sequence of LT or GT choices should lead to a single best
-    # item.
-    assert all(len(r['maxes']) == 1 for r in result)
-
-    # If changes to Artiruno result in having to ask less questions,
-    # change this test. Having to ask more questions is a regression.
-    assert (Counter(len(r['questions']) for r in result) ==
-        Counter({4: 6, 3: 3, 2: 1}))
-
-    if diag:
-        print('Maxima:', Counter(r['maxes'] for r in result))
-
 def test_recode_criteria():
     # Renaming criterion values shouldn't change the questions asked
     # or the results.
