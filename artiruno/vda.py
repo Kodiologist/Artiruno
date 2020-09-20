@@ -8,7 +8,7 @@ class Jump(Exception):
     def __init__(self, value):
         self.value = value
 
-def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
+def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_level = 1):
     """
 - `criteria` is an iterable of iterables specifying the levels of
   each criterion. Within a criterion, we assume that later levels are
@@ -18,7 +18,10 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
 - `asker` should be a callable object f(a, b) that returns
     GT (1) if a is better
     LT (-1) if b is better
-    0 (EQ) if they're equally good"""
+    0 (EQ) if they're equally good
+- `max_level` sets the maximum number of criteria on which hypothetical
+  items can deviate from the reference item when asking the user to
+  make choices."""
 
     criteria, alts, prefs = _setup(criteria, alts, goal)
 
@@ -28,11 +31,11 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
             learn(criteria, prefs, a, b, rel := asker(a, b))
         return rel
 
-    def dev_from_ref(criterion, value):
+    def dev_from_ref(dev_criteria, vector):
       # Return a vector in the item space that deviates from the best
-      # possible item on the given criterion with the given value.
+      # possible item on the given criteria with the given values.
         return tuple(
-           value if i == criterion else c[-1]
+           vector[i] if i in dev_criteria else c[-1]
            for i, c in enumerate(criteria))
 
     def num_item(item):
@@ -42,56 +45,59 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST):
       # criteria, though.)
         return tuple(criteria[i].index(v) for i, v in enumerate(item))
 
-    to_try = set(choose2(sorted(alts, key = num_item)))
     focus = None
 
-    while not (goal == Goal.FIND_BEST and len(prefs.maxes(alts)) == 1):
+    for level in range(1, max_level + 1):
 
-        # Don't ask about pairs we already know.
-        to_try = {x for x in to_try if prefs.cmp(*x) == IC}
+        to_try = set(choose2(sorted(alts, key = num_item)))
 
-        if goal == Goal.FIND_BEST:
-            # Don't compare alternatives that can't be the best.
-            not_best = {x
-                for x in alts
-                if any(prefs.cmp(x, a) == LT for a in alts)}
-            to_try = {(a, b)
-                for a, b in to_try
-                if a not in not_best and b not in not_best}
+        while not (goal == Goal.FIND_BEST and len(prefs.maxes(alts)) == 1):
 
-        if not to_try:
-            break
+            # Don't ask about pairs we already know.
+            to_try = {x for x in to_try if prefs.cmp(*x) == IC}
 
-        a, b = max(to_try, key = lambda pair: (
-            (focus in pair, num_item(pair[0]), num_item(pair[1]))))
-        to_try.remove((a, b))
+            if goal == Goal.FIND_BEST:
+                # Don't compare alternatives that can't be the best.
+                not_best = {x
+                    for x in alts
+                    if any(prefs.cmp(x, a) == LT for a in alts)}
+                to_try = {(a, b)
+                    for a, b in to_try
+                    if a not in not_best and b not in not_best}
 
-        cs = [ci
-            for ci in range(len(criteria))
-            if a[ci] != b[ci]]
-        try:
-            # Implement a strict version of Statement 2 from Larichev
-            # and Moshkovieh (1995, p. 511).
-            def gp(c1, c2):
-                return get_pref(
-                    dev_from_ref(c1, a[c1]),
-                    dev_from_ref(c2, b[c2]))
-            def f(rel, cs1, cs2):
-                if not cs1:
-                    raise Jump(rel)
-                c1, *cs1 = cs1
-                for i_c2, c2 in enumerate(cs2):
-                   if rel == EQ or gp(c1, c2) in (EQ, rel):
-                        f(rel or gp(c1, c2), cs1, cs2[:i_c2] + cs2[i_c2 + 1:])
-            f(EQ, cs, cs)
-        except Jump as j:
-            learn(criteria, prefs, a, b, j.value)
+            if not to_try:
+                break
 
-        if goal == Goal.FIND_BEST:
-            focus = (
-                a if prefs.cmp(a, b) == GT else
-                b if prefs.cmp(a, b) == LT else
-                focus)
+            a, b = max(to_try, key = lambda pair: (
+                (focus in pair, num_item(pair[0]), num_item(pair[1]))))
+            to_try.remove((a, b))
+
+            cs = frozenset({ci
+                for ci in range(len(criteria))
+                if a[ci] != b[ci]})
+            try:
+                def gp(c1, c2):
+                    return get_pref(
+                        dev_from_ref(c1, a),
+                        dev_from_ref(c2, b))
+                def f(rel, cs1, cs2):
+                    if not cs1:
+                        raise Jump(rel)
+                    for c1 in itertools.combinations(sorted(cs1), min(len(cs1), level)):
+                        r1 = cs1.difference(c1)
+                        for c2 in itertools.combinations(sorted(cs2), len(c1)):
+                            r2 = cs2.difference(c2)
+                            if rel == EQ or gp(c1, c2) in (EQ, rel):
+                                f(rel or gp(c1, c2), r1, r2)
+                f(EQ, cs, cs)
+            except Jump as j:
+                learn(criteria, prefs, a, b, j.value)
+
+            if goal == Goal.FIND_BEST:
+                focus = (
+                    a if prefs.cmp(a, b) == GT else
+                    b if prefs.cmp(a, b) == LT else
+                    focus)
 
     return prefs
 
