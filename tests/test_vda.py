@@ -192,7 +192,8 @@ def test_lex_big():
         criteria = criteria,
         alts = alts,
         asker = a,
-        goal = Goal.FIND_BEST)
+        goal = Goal.FIND_BEST,
+        max_level = 2)
 
     prefs = p(lambda a, b: cmp(a[::-1], b[::-1]))
     assert prefs.maxes() == {(2, 2, 2)}
