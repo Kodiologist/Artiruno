@@ -108,7 +108,9 @@ def test_big_item_space():
         goal = Goal.FIND_BEST)
     assert prefs.cmp(tuple(alts[0]), tuple(alts[1])) == LT
 
-def all_choice_seqs(criteria, alts = (), goal = Goal.FIND_BEST):
+def all_choice_seqs(
+        criteria, alts = (), goal = Goal.FIND_BEST,
+        max_level = 1):
 
     choices = (LT, EQ, GT)
     alts = tuple(map(tuple, alts))
@@ -130,7 +132,8 @@ def all_choice_seqs(criteria, alts = (), goal = Goal.FIND_BEST):
             criteria = criteria,
             alts = alts,
             asker = asker,
-            goal = goal)
+            goal = goal,
+            max_level = max_level)
         result[-1]['choices'] = queue[0]
         result[-1]['prefs'] = prefs
         result[-1]['maxes'] = prefs.maxes(alts)
@@ -148,14 +151,17 @@ def test_recode_criteria():
         ('a1', 'b0', 'c2'),
         ('a0', 'b2', 'c1'))
 
-    r1 = all_choice_seqs(criteria, alts)
+    r1 = all_choice_seqs(criteria, alts, max_level = 2)
 
     # Renaming criterion values shouldn't change the questions asked
     # or the results.
     crev = tuple(c[::-1] for c in criteria)
     def revitem(item):
         return tuple(crev[c][criteria[c].index(v)] for c, v in enumerate(item))
-    r2 = all_choice_seqs(crev, tuple(map(revitem, alts)))
+    r2 = all_choice_seqs(
+        criteria = crev,
+        alts = tuple(map(revitem, alts)),
+        max_level = 2)
 
     assert len(r1) == len(r2)
     for d1, d2 in zip(r1, r2):
@@ -169,7 +175,8 @@ def test_recode_criteria():
         return item + ('d1',)
     r3 = all_choice_seqs(
         criteria = criteria + (('d0', 'd1', 'd2'),),
-        alts = map(addc, alts))
+        alts = map(addc, alts),
+        max_level = 2)
 
     assert len(r1) == len(r3)
     for d1, d3 in zip(r1, r3):
