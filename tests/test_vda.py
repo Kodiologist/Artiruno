@@ -139,8 +139,6 @@ def all_choice_seqs(criteria, alts = (), goal = Goal.FIND_BEST):
     return result
 
 def test_recode_criteria():
-    '''Renaming criterion values shouldn't change the questions asked
-    or the results.'''
 
     criteria = tuple(
         tuple('abc'[i] + str(j) for j in range(3)) for i in range(3))
@@ -152,6 +150,8 @@ def test_recode_criteria():
 
     r1 = all_choice_seqs(criteria, alts)
 
+    # Renaming criterion values shouldn't change the questions asked
+    # or the results.
     crev = tuple(c[::-1] for c in criteria)
     def revitem(item):
         return tuple(crev[c][criteria[c].index(v)] for c, v in enumerate(item))
@@ -162,6 +162,21 @@ def test_recode_criteria():
         assert d2['questions'] == [(revitem(a), revitem(b))
             for a, b in d1['questions']]
         assert d2['maxes'] == set(map(revitem, d1['maxes']))
+
+    # Similarly for adding a criterion on which all alternatives
+    # are the same.
+    def addc(item):
+        return item + ('d1',)
+    r3 = all_choice_seqs(
+        criteria = criteria + (('d0', 'd1', 'd2'),),
+        alts = map(addc, alts))
+
+    assert len(r1) == len(r3)
+    for d1, d3 in zip(r1, r3):
+        assert d3['questions'] == [(a + ('d2',), b + ('d2',))
+            for a, b in d1['questions']]
+        assert d1['choices'] == d3['choices']
+        assert d3['maxes'] == set(map(addc, d1['maxes']))
 
 @pytest.mark.slow
 def test_irrelevant_criteria():
