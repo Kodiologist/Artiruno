@@ -108,8 +108,9 @@ def test_big_item_space():
         goal = Goal.FIND_BEST)
     assert prefs.cmp(tuple(alts[0]), tuple(alts[1])) == LT
 
-def all_choice_seqs(choices, criteria, alts = (), goal = Goal.FIND_BEST):
+def all_choice_seqs(criteria, alts = (), goal = Goal.FIND_BEST):
 
+    choices = (LT, EQ, GT)
     alts = tuple(map(tuple, alts))
     queue = [(c,) for c in choices]
     result = []
@@ -149,12 +150,12 @@ def test_recode_criteria():
         ('a1', 'b0', 'c2'),
         ('a0', 'b2', 'c1'))
 
-    r1 = all_choice_seqs((LT, EQ, GT), criteria, alts)
+    r1 = all_choice_seqs(criteria, alts)
 
     crev = tuple(c[::-1] for c in criteria)
     def revitem(item):
         return tuple(crev[c][criteria[c].index(v)] for c, v in enumerate(item))
-    r2 = all_choice_seqs((LT, EQ, GT), crev, tuple(map(revitem, alts)))
+    r2 = all_choice_seqs(crev, tuple(map(revitem, alts)))
 
     assert len(r1) == len(r2)
     for d1, d2 in zip(r1, r2):
@@ -165,7 +166,6 @@ def test_recode_criteria():
 @pytest.mark.slow
 def test_irrelevant_criteria():
     for d in all_choice_seqs(
-            (LT, EQ, GT),
             criteria = ('abc', 'pqr', 'xyz'),
             goal = Goal.RANK_SPACE):
         def p(a, b):
