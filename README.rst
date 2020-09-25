@@ -2,7 +2,7 @@ Artiruno is an in-progress Python package for performing verbal decision analysi
 
 In ``artiruno.preorder``, Artiruno provides a class for `preordered sets`_ that should be just as useful outside the context of decision-making.
 
-The test suite uses ``pytest``. To run it, just use the command ``pytest``.
+The test suite uses ``pytest``. To run it, just use the command ``pytest``. By default, particularly slow tests are skipped. Say ``pytest --slow`` to run all the tests.
 
 .. _`preordered sets`: https://en.wikipedia.org/wiki/Preorder
 
