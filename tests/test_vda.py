@@ -237,7 +237,7 @@ def test_lex_big():
     assert prefs.maxes(among = alts) == {(2, 2, 0)}
 
 @pytest.mark.parametrize('criteria',
-    [(2,2,2), (3,2,2), (3,3,3), (2,) * 5, (5,) * 5])
+    [(2,2), (3,4), (5,5), (2,2,2), (3,2,2), (3,3,3), (2,) * 5, (5,) * 5])
 def test_lex_generalized(criteria, run_slow_tests):
     '''Randomly generate alternatives and an underlying ranking for
     the criteria. Check that the concluded preferences equal the
@@ -248,6 +248,7 @@ def test_lex_generalized(criteria, run_slow_tests):
 
     R = random.Random(criteria)
     criteria = tuple(tuple(range(n)) for n in criteria)
+    item_space = tuple(itertools.product(*criteria))
 
     criterion_order = []
     def asker(a, b):
@@ -256,10 +257,8 @@ def test_lex_generalized(criteria, run_slow_tests):
             for v in (a, b)))
 
     for trial in range(20):
-        alts = set()
-        n_alts = R.randint(2, 8)
-        while len(alts) < n_alts:
-            alts.add(tuple(map(R.choice, criteria)))
+        alts = R.sample(item_space,
+            min(len(item_space), R.randint(2, 8)))
         criterion_order = R.sample(range(len(criteria)), len(criteria))
         goal = R.choice([Goal.FIND_BEST, Goal.RANK_ALTS])
         prefs = vda(
