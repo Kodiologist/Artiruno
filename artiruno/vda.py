@@ -108,6 +108,7 @@ def _setup(criteria = (), alts = (), goal = Goal.FIND_BEST):
     assert isinstance(goal, Goal)
 
     criteria = tuple(map(tuple, criteria))
+    assert len(criteria)
     assert all(
         len(c) > 0 and len(c) == len(set(c))
         for c in criteria)
