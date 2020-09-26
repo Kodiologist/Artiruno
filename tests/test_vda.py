@@ -273,7 +273,7 @@ def test_lex_generalized(criteria, run_slow_tests):
     the criteria. Check that the concluded preferences equal the
     underlying preferences.'''
 
-    if criteria == (5,) * 5 and not run_slow_tests:
+    if len(criteria) > 3 and not run_slow_tests:
         pytest.skip()
 
     R = random.Random(criteria)
