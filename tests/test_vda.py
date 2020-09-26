@@ -90,13 +90,13 @@ def test_simple_strings():
             for (ai, a), (bi, b) in choose2(enumerate(ranking)):
                 assert prefs.cmp(a, b) == cmp(ai, bi)
 
+def asker_stub(a, b):
+    raise ValueError
+
 def test_one_criterion():
     '''When there's only one criterion, we should never need to ask
     questions, because the rule of dominance suffices to infer all
     preferences.'''
-
-    def asker_stub(a, b):
-        raise ValueError
 
     for criterion_length in range(2, 10):
         prefs = artiruno.vda(
@@ -105,6 +105,20 @@ def test_one_criterion():
            goal = Goal.RANK_SPACE)
         for i, j in choose2(range(criterion_length)):
             assert prefs.cmp((i,), (j,)) == LT
+
+def test_dominant_maximum():
+    '''Under Goal.FIND_BEST, if there's an alternative that dominates
+    all the others, we shouldn't need to ask any questions.'''
+
+    criteria = tuple(tuple(range(5)) for _ in range(4))
+    alts = [
+        (2, 3, 1, 4),
+        (2, 1, 3, 3),
+        (2, 4, 1, 3),
+        (3, 0, 2, 3),
+        (4, 4, 3, 4)]
+    prefs = artiruno.vda(criteria, alts, asker_stub, Goal.FIND_BEST)
+    assert prefs.maxes(among = alts) == {(4, 4, 3, 4)}
 
 def test_big_item_space():
     n_criteria = 10
