@@ -140,7 +140,7 @@ def test_big_item_space():
 
 def all_choice_seqs(
         criteria, alts = (), goal = Goal.FIND_BEST,
-        max_level = 1):
+        max_dev = 2):
 
     choices = (LT, EQ, GT)
     alts = tuple(map(tuple, alts))
@@ -163,7 +163,7 @@ def all_choice_seqs(
             alts = alts,
             asker = asker,
             goal = goal,
-            max_level = max_level)
+            max_dev = max_dev)
         result[-1]['choices'] = queue[0]
         result[-1]['prefs'] = prefs
         result[-1]['maxes'] = prefs.maxes(alts)
@@ -181,7 +181,7 @@ def test_recode_criteria():
         ('a1', 'b0', 'c2'),
         ('a0', 'b2', 'c1'))
 
-    r1 = all_choice_seqs(criteria, alts, max_level = 2)
+    r1 = all_choice_seqs(criteria, alts, max_dev = 5)
 
     # Renaming criterion values shouldn't change the questions asked
     # or the results.
@@ -191,7 +191,7 @@ def test_recode_criteria():
     r2 = all_choice_seqs(
         criteria = crev,
         alts = tuple(map(revitem, alts)),
-        max_level = 2)
+        max_dev = 5)
 
     assert len(r1) == len(r2)
     for d1, d2 in zip(r1, r2):
@@ -206,7 +206,7 @@ def test_recode_criteria():
     r3 = all_choice_seqs(
         criteria = criteria + (('d0', 'd1', 'd2'),),
         alts = map(addc, alts),
-        max_level = 2)
+        max_dev = 5)
 
     assert len(r1) == len(r3)
     for d1, d3 in zip(r1, r3):
@@ -232,7 +232,7 @@ def test_lex_small():
         criteria = criteria, alts = alts,
         asker = cmp,
         goal = Goal.RANK_SPACE,
-        max_level = 2)
+        max_dev = 3)
     assert prefs.cmp(*alts) == cmp(*alts)
 
 def test_lex_big():
@@ -256,7 +256,7 @@ def test_lex_big():
         alts = alts,
         asker = a,
         goal = Goal.FIND_BEST,
-        max_level = 2)
+        max_dev = 3)
 
     prefs = p(lambda a, b: cmp(a[::-1], b[::-1]))
     assert prefs.maxes() == {(2, 2, 2)}
@@ -292,7 +292,7 @@ def test_lex_generalized(criteria, run_slow_tests):
         criterion_order = R.sample(range(len(criteria)), len(criteria))
         goal = R.choice([Goal.FIND_BEST, Goal.RANK_ALTS])
         prefs = vda(
-            criteria, alts, asker, goal, max_level = len(criteria))
+            criteria, alts, asker, goal, max_dev = 2*len(criteria) + 1)
         if goal == Goal.FIND_BEST:
             assert prefs.maxes(among = alts) == {
                 a

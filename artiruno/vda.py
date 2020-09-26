@@ -8,7 +8,7 @@ class Jump(Exception):
     def __init__(self, value):
         self.value = value
 
-def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_level = 1):
+def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev = 2):
     """
 - `criteria` is an iterable of iterables specifying the levels of
   each criterion. Within a criterion, we assume that later levels are
@@ -19,10 +19,12 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_level
     GT (1) if a is better
     LT (-1) if b is better
     0 (EQ) if they're equally good
-- `max_level` sets the maximum number of criteria on which hypothetical
+- `max_dev` sets the maximum number of criteria on which hypothetical
   items can deviate from the reference item when asking the user to
-  make choices."""
+  make choices. It's summed across both items; e.g., `max_dev == 5`
+  allows 4 deviant criteria compared to 1 deviant criterion."""
 
+    assert max_dev >= 2
     criteria, alts, prefs = _setup(criteria, alts, goal)
 
     def get_pref(a, b):
@@ -48,7 +50,12 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_level
 
     focus = None
 
-    for level in range(1, max_level + 1):
+    for allowed_pairs in itertools.accumulate(
+           [(big, small), (small, big)]
+           for deviation in range(1, max_dev)
+           for big in range(deviation, deviation // 2, -1)
+           for small in [deviation + 1 - big]
+           if small <= len(criteria)):
 
         to_try = set(choose2(sorted(alts, key = num_item)))
 
@@ -84,12 +91,19 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_level
                 def f(rel, cs1, cs2):
                     if not cs1:
                         raise Jump(rel)
-                    for c1 in itertools.combinations(sorted(cs1), min(len(cs1), level)):
-                        r1 = cs1.difference(c1)
-                        for c2 in itertools.combinations(sorted(cs2), len(c1)):
-                            r2 = cs2.difference(c2)
-                            if rel == EQ or gp(c1, c2) in (EQ, rel):
-                                f(rel or gp(c1, c2), r1, r2)
+                    for size1, size2 in allowed_pairs[
+                            # In the topmost call of `f`, force use of the
+                            # new allowed_pairs, to save pointless iterations.
+                            -2 if len(cs1) == len(criteria) else 0:]:
+                        if (len(cs1) - size1 < 0 or len(cs2) - size2 < 0 or
+                                (len(cs1) - size1 == 0) != (len(cs2) - size2 == 0)):
+                            continue
+                        for c1 in itertools.combinations(sorted(cs1), size1):
+                            r1 = cs1.difference(c1)
+                            for c2 in itertools.combinations(sorted(cs2), size2):
+                                r2 = cs2.difference(c2)
+                                if rel == EQ or gp(c1, c2) in (EQ, rel):
+                                    f(rel or gp(c1, c2), r1, r2)
                 f(EQ, cs, cs)
             except Jump as j:
                 learn(criteria, prefs, a, b, j.value)
