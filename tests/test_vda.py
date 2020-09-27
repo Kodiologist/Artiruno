@@ -318,7 +318,7 @@ def test_value_function(criteria, R):
     additive value function, in which each criterion increment adds a
     certain positive amount of utility.'''
     values = tuple(
-       tuple(0 if i == 0 else abs(R.normalvariate(0, 1)) + .01
+       tuple(0 if i == 0 else R.randint(1, 4)
            for i in range(len(c)))
        for c in criteria)
     return lambda a, b: cmp(*(
