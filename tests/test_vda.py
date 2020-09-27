@@ -266,38 +266,48 @@ def test_lex_big():
     assert prefs.maxes() == {(2, 2, 2)}
     assert prefs.maxes(among = alts) == {(2, 2, 0)}
 
-@pytest.mark.parametrize('criteria',
-    [(2,2), (3,4), (5,5), (2,2,2), (3,2,2), (3,3,3), (2,) * 5, (5,) * 5])
-def test_lex_generalized(criteria, run_slow_tests):
-    '''Randomly generate alternatives and an underlying ranking for
-    the criteria. Check that the concluded preferences equal the
-    underlying preferences.'''
+def random_scenarios(f):
+    '''For each of several trials, randomly generate alternatives, and
+    call `f` to randomly generate an asker. Check that the preferences
+    Artirunoconcludes are consistent with the asker.'''
 
-    if len(criteria) > 3 and not run_slow_tests:
-        pytest.skip()
+    trials = 20
+    criteria_fast = [(2,2), (3,4), (5,5), (2,2,2), (3,2,2), (3,3,3)]
+    criteria_slow = [(2,) * 5, (5,) * 5]
 
-    R = random.Random(criteria)
-    criteria = tuple(tuple(range(n)) for n in criteria)
-    item_space = tuple(itertools.product(*criteria))
+    @pytest.mark.parametrize('criteria', criteria_fast + criteria_slow)
+    def out(criteria, run_slow_tests):
+        if criteria in criteria_slow and not run_slow_tests:
+            pytest.skip()
 
-    criterion_order = []
-    def asker(a, b):
-        return cmp(*(
-            tuple(v[i] for i in criterion_order)
-            for v in (a, b)))
+        criteria = tuple(tuple(range(n)) for n in criteria)
+        item_space = tuple(itertools.product(*criteria))
 
-    for trial in range(20):
-        alts = R.sample(item_space,
-            min(len(item_space), R.randint(2, 8)))
-        criterion_order = R.sample(range(len(criteria)), len(criteria))
-        goal = R.choice([Goal.FIND_BEST, Goal.RANK_ALTS])
-        prefs = vda(
-            criteria, alts, asker, goal, max_dev = 2*len(criteria) + 1)
-        if goal == Goal.FIND_BEST:
-            assert prefs.maxes(among = alts) == {
-                a
-                for a in alts
-                if all(prefs.cmp(a, b) in (GT, EQ) for b in alts)}
-        else:
-            for a, b in choose2(alts):
-                assert prefs.cmp(a, b) == asker(a, b)
+        for trial in range(trials):
+            R = random.Random((criteria, trial))
+            alts = R.sample(item_space,
+                min(len(item_space), R.randint(2, 8)))
+            goal = R.choice([Goal.FIND_BEST, Goal.RANK_ALTS])
+            asker = f(criteria, R)
+            prefs = vda(
+                criteria, alts, asker, goal,
+                max_dev = 2*len(criteria) + 1)
+            if goal == Goal.FIND_BEST:
+                assert prefs.maxes(among = alts) == {
+                    a
+                    for a in alts
+                    if all(asker(a, b) in (GT, EQ) for b in alts)}
+            else:
+                for a, b in choose2(alts):
+                    assert prefs.cmp(a, b) == asker(a, b)
+
+    return out
+
+@random_scenarios
+def test_lex_generalized(criteria, R):
+    '''Artiruno should be able to reproduce lexicographic preferences,
+    in which the criteria have a defined order of importance.'''
+    criterion_order = R.sample(range(len(criteria)), len(criteria))
+    return lambda a, b: cmp(*(
+        tuple(v[i] for i in criterion_order)
+        for v in (a, b)))
