@@ -311,3 +311,17 @@ def test_lex_generalized(criteria, R):
     return lambda a, b: cmp(*(
         tuple(v[i] for i in criterion_order)
         for v in (a, b)))
+
+@random_scenarios
+def test_value_function(criteria, R):
+    '''Artiruno should be able to reproduce preferences defined by an
+    additive value function, in which each criterion increment adds a
+    certain positive amount of utility.'''
+    values = tuple(
+       tuple(0 if i == 0 else abs(R.normalvariate(0, 1)) + .01
+           for i in range(len(c)))
+       for c in criteria)
+    return lambda a, b: cmp(*(
+       sum(sum(values[ci][: cl + 1])
+           for ci, cl in enumerate(item))
+       for item in (a, b)))
