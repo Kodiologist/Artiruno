@@ -59,7 +59,10 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev =
 
         to_try = set(choose2(sorted(alts, key = num_item)))
 
-        while not (goal == Goal.FIND_BEST and len(prefs.maxes(alts)) == 1):
+        while True:
+
+            if goal == Goal.FIND_BEST and len(prefs.maxes(alts)):
+                return prefs
 
             # Don't ask about pairs we already know.
             to_try = {x for x in to_try if prefs.cmp(*x) == IC}
@@ -74,7 +77,9 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev =
                     if a not in not_best and b not in not_best}
 
             if not to_try:
-                break
+                if any(prefs.cmp(a, b) == IC for a, b in choose2(alts)):
+                    break
+                return prefs
 
             a, b = max(to_try, key = lambda pair:
                 (focus in pair, num_item(pair[0]), num_item(pair[1])))
