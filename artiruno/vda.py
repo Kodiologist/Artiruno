@@ -76,8 +76,8 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev =
             if not to_try:
                 break
 
-            a, b = max(to_try, key = lambda pair: (
-                (focus in pair, num_item(pair[0]), num_item(pair[1]))))
+            a, b = max(to_try, key = lambda pair:
+                (focus in pair, num_item(pair[0]), num_item(pair[1])))
             to_try.remove((a, b))
 
             cs = frozenset({ci
