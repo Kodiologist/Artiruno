@@ -1,4 +1,4 @@
-import random, itertools
+import random, itertools, inspect
 from collections import Counter
 import artiruno
 from artiruno import IC, LT, EQ, GT, vda, Goal, cmp, choose2
@@ -259,11 +259,17 @@ def random_scenarios(f):
     trials = 20
     criteria_fast = [(2,2), (3,4), (5,5), (2,2,2), (3,2,2), (3,3,3)]
     criteria_slow = [(2,) * 5, (5,) * 5]
+    criteria_all = criteria_fast + criteria_slow
 
-    @pytest.mark.parametrize('criteria', criteria_fast + criteria_slow)
+    @pytest.mark.parametrize('criteria', criteria_all)
     def out(criteria, run_slow_tests):
         if criteria in criteria_slow and not run_slow_tests:
             pytest.skip()
+
+        questions_asked = 0
+        expect_questions_asked = (
+            inspect.signature(f).parameters['n_questions'].default)[
+                criteria_all.index(criteria)]
 
         criteria = tuple(tuple(range(n)) for n in criteria)
         item_space = tuple(itertools.product(*criteria))
@@ -274,8 +280,12 @@ def random_scenarios(f):
                 min(len(item_space), R.randint(2, 8)))
             goal = R.choice([Goal.FIND_BEST, Goal.RANK_ALTS])
             asker = f(criteria, R)
+            def counting_asker(a, b):
+                nonlocal questions_asked
+                questions_asked += 1
+                return asker(a, b)
             prefs = vda(
-                criteria, alts, asker, goal,
+                criteria, alts, counting_asker, goal,
                 max_dev = 2*len(criteria) + 1)
             if goal == Goal.FIND_BEST:
                 assert prefs.maxes(among = alts) == {
@@ -286,10 +296,17 @@ def random_scenarios(f):
                 for a, b in choose2(alts):
                     assert prefs.cmp(a, b) == asker(a, b)
 
+        assert questions_asked == expect_questions_asked
+           # If questions_asked < expect_questions_asked, that's an
+           # improvement, so update expect_questions_asked.
+           # If questions_asked > expect_questions_asked, that's a
+           # regression, so fix it.
+
     return out
 
 @random_scenarios
-def test_lex_generalized(criteria, R):
+def test_lex_generalized(criteria, R,
+        n_questions = (11, 27, 25, 22, 23, 54, 83, 305)):
     '''Artiruno should be able to reproduce lexicographic preferences,
     in which the criteria have a defined order of importance.'''
     criterion_order = R.sample(range(len(criteria)), len(criteria))
@@ -298,7 +315,8 @@ def test_lex_generalized(criteria, R):
         for v in (a, b)))
 
 @random_scenarios
-def test_value_function(criteria, R):
+def test_value_function(criteria, R,
+        n_questions = (11, 28, 38, 23, 23, 66, 67, 484)):
     '''Artiruno should be able to reproduce preferences defined by an
     additive value function, in which each criterion increment adds a
     certain positive amount of utility.'''
