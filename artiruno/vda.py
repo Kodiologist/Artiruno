@@ -48,8 +48,6 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev =
         of criteria, though.)'''
         return tuple(criteria[i].index(v) for i, v in enumerate(item))
 
-    foci = []
-
     for allowed_pairs in itertools.accumulate(
            [(big, small), (small, big)]
            for deviation in range(1, max_dev)
@@ -81,16 +79,8 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev =
                     break
                 return prefs
 
-            if goal == Goal.FIND_BEST:
-                foci = [
-                    (a, sum(prefs.cmp(a, b) in (GT, EQ) for b in alts))
-                    for a in alts]
-                max_n = max(n for _, n in foci)
-                foci = [a for a, n in foci if n == max_n]
-            a, b = max(to_try, key = lambda pair: (
-                (pair[0] in foci) + (pair[1] in foci),
-                num_item(pair[0]),
-                num_item(pair[1])))
+            a, b = max(to_try, key = lambda pair:
+                (num_item(pair[0]), num_item(pair[1])))
             to_try.remove((a, b))
 
             cs = frozenset({ci
