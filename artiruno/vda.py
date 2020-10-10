@@ -48,7 +48,7 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev =
         of criteria, though.)'''
         return tuple(criteria[i].index(v) for i, v in enumerate(item))
 
-    focus = None
+    foci = []
 
     for allowed_pairs in itertools.accumulate(
            [(big, small), (small, big)]
@@ -81,8 +81,16 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev =
                     break
                 return prefs
 
-            a, b = max(to_try, key = lambda pair:
-                (focus in pair, num_item(pair[0]), num_item(pair[1])))
+            if goal == Goal.FIND_BEST:
+                foci = [
+                    (a, sum(prefs.cmp(a, b) in (GT, EQ) for b in alts))
+                    for a in alts]
+                max_n = max(n for _, n in foci)
+                foci = [a for a, n in foci if n == max_n]
+            a, b = max(to_try, key = lambda pair: (
+                (pair[0] in foci) + (pair[1] in foci),
+                num_item(pair[0]),
+                num_item(pair[1])))
             to_try.remove((a, b))
 
             cs = frozenset({ci
@@ -112,12 +120,6 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev =
                 f(EQ, cs, cs)
             except Jump as j:
                 learn(criteria, prefs, a, b, j.value)
-
-            if goal == Goal.FIND_BEST:
-                focus = (
-                    a if prefs.cmp(a, b) == GT else
-                    b if prefs.cmp(a, b) == LT else
-                    focus)
 
     return prefs
 
