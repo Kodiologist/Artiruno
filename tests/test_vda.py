@@ -270,7 +270,7 @@ def test_lex_big():
 def random_scenarios(f):
     '''For each of several trials, randomly generate alternatives, and
     call `f` to randomly generate an asker. Check that the preferences
-    Artirunoconcludes are consistent with the asker.'''
+    Artiruno concludes are consistent with the asker.'''
 
     trials = 20
     criteria_fast = [(2,2), (3,4), (5,5), (2,2,2), (3,2,2), (3,3,3)]
