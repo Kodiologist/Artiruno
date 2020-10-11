@@ -286,7 +286,7 @@ def random_scenarios(f):
                 return asker(a, b)
             prefs = vda(
                 criteria, alts, counting_asker, goal,
-                max_dev = 2*len(criteria) + 1)
+                max_dev = 2*len(criteria))
             if goal == Goal.FIND_BEST:
                 assert prefs.maxes(among = alts) == {
                     a

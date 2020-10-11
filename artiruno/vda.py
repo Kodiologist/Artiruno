@@ -24,8 +24,8 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev =
   make choices. It's summed across both items; e.g., `max_dev == 5`
   allows 4 deviant criteria compared to 1 deviant criterion."""
 
-    assert max_dev >= 2
     criteria, alts, prefs = _setup(criteria, alts, goal)
+    assert 2 <= max_dev <= 2*len(criteria)
 
     def get_pref(a, b):
         add_items(criteria, prefs, [a, b])
