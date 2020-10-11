@@ -87,10 +87,6 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev =
                 for ci in range(len(criteria))
                 if a[ci] != b[ci]})
             try:
-                def gp(c1, c2):
-                    return get_pref(
-                        dev_from_ref(c1, a),
-                        dev_from_ref(c2, b))
                 def f(rel, cs1, cs2):
                     if not cs1:
                         raise Jump(rel)
@@ -102,11 +98,10 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev =
                                 (len(cs1) - size1 == 0) != (len(cs2) - size2 == 0)):
                             continue
                         for c1 in itertools.combinations(sorted(cs1), size1):
-                            r1 = cs1.difference(c1)
                             for c2 in itertools.combinations(sorted(cs2), size2):
-                                r2 = cs2.difference(c2)
-                                if rel == EQ or gp(c1, c2) in (EQ, rel):
-                                    f(rel or gp(c1, c2), r1, r2)
+                                p = get_pref(dev_from_ref(c1, a), dev_from_ref(c2, b))
+                                if rel == EQ or p in (EQ, rel):
+                                    f(rel or p, cs1.difference(c1), cs2.difference(c2))
                 f(EQ, cs, cs)
             except Jump as j:
                 learn(criteria, prefs, a, b, j.value)
