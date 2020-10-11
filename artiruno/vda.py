@@ -30,7 +30,7 @@ def vda(criteria, alts = (), asker = None, goal = Goal.FIND_BEST, max_dev = 2):
     def get_pref(a, b):
         add_items(criteria, prefs, [a, b])
         if (rel := prefs.cmp(a, b)) is None:
-            learn(criteria, prefs, a, b, rel := asker(a, b))
+            prefs.learn(a, b, rel := asker(a, b))
         return rel
 
     def dev_from_ref(dev_criteria, vector):
@@ -104,7 +104,7 @@ def vda(criteria, alts = (), asker = None, goal = Goal.FIND_BEST, max_dev = 2):
                                     f(rel or p, cs1.difference(c1), cs2.difference(c2))
                 f(EQ, cs, cs)
             except Jump as j:
-                learn(criteria, prefs, a, b, j.value)
+                prefs.learn(a, b, j.value)
 
     return prefs
 
@@ -151,7 +151,4 @@ def add_items(criteria, prefs, items):
             if not (LT in cmps and GT in cmps):
                 # One item dominates the other. (We know that `cmps`
                 # isn't all EQ because `x` and `a` are different.)
-                learn(criteria, prefs, x, a, LT if LT in cmps else GT)
-
-def learn(criteria, prefs, a0, b0, rel):
-    prefs.learn(a0, b0, rel)
+                prefs.learn(x, a, LT if LT in cmps else GT)
