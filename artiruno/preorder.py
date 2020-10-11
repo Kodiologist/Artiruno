@@ -1,4 +1,5 @@
 import itertools
+from collections import Counter
 from artiruno.util import choose2
 
 IC, LT, EQ, GT = None, -1, 0, 1
@@ -43,17 +44,17 @@ class PreorderedSet:
             return EQ
         return self.relations[a, b] if a < b else invert_rel(self.relations[b, a])
 
-    def extrema(self, among = None, mins = False):
+    def extreme(self, n, among = None, bottom = False):
         return frozenset(x
             for x in among or self.elements
-            if all(
-                self.cmp(x, a) in (LT if mins else GT, EQ)
-                for a in among or self.elements))
+            for cmps in [Counter(
+                self.cmp(x, a) for a in among or self.elements)]
+            if cmps[IC] == 0 and cmps[GT if bottom else LT] < n)
 
     def maxes(self, among = None):
-        return self.extrema(among, mins = False)
+        return self.extreme(1, among, bottom = False)
     def mins(self, among = None):
-        return self.extrema(among, mins = True)
+        return self.extreme(1, among, bottom = True)
 
     def _set(self, a, b, rel):
         'Return true if a change was made.'

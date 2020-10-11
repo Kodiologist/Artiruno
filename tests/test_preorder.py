@@ -1,4 +1,5 @@
-from artiruno import PreorderedSet, IC, LT, EQ, GT, ContradictionError
+from artiruno import (
+    PreorderedSet, IC, LT, EQ, GT, ContradictionError, cmp, choose2)
 import pytest
 
 def test_simple():
@@ -84,6 +85,26 @@ def test_extrema():
     assert x.mins() == {0}
     assert x.maxes() == {2, 3}
     assert x.maxes(among = {0, 1, 3}) == {3}
+    assert x.extreme(n = 2) == {2, 3}
+    assert x.extreme(n = 3) == {1, 2, 3}
+
+def test_extreme_n():
+    x = PreorderedSet(l + str(i)
+        for l in "wxyz"
+        for i in range(3))
+    for a, b in choose2(x.elements):
+        x.learn(a, b, cmp(a[0], b[0]))
+
+    assert (x.maxes() == x.extreme(2) == x.extreme(3) ==
+        {"z0", "z1", "z2"})
+    assert (x.extreme(4) == x.extreme(5) == x.extreme(6) ==
+        {"z0", "z1", "z2", "y0", "y1", "y2"})
+    def xb(n):
+        return x.extreme(n, bottom = True)
+    assert (x.mins() == xb(2) == xb(3) ==
+        {"w0", "w1", "w2"})
+    assert (xb(4) == xb(5) == xb(6) ==
+        {"w0", "w1", "w2", "x0", "x1", "x2"})
 
 def test_get_subset():
     x = PreorderedSet(("a", "b1", "b2", "c", "d"), (
