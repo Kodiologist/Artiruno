@@ -8,7 +8,7 @@ class Jump(Exception):
     def __init__(self, value):
         self.value = value
 
-def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev = 2):
+def vda(criteria, alts = (), asker = None, goal = Goal.FIND_BEST, max_dev = 2):
     """
 - `criteria` is an iterable of iterables specifying the levels of
   each criterion. Within a criterion, we assume that later levels are
@@ -108,7 +108,7 @@ def vda(criteria = (), alts = (), asker = None, goal = Goal.FIND_BEST, max_dev =
 
     return prefs
 
-def _setup(criteria = (), alts = (), goal = Goal.FIND_BEST):
+def _setup(criteria, alts = (), goal = Goal.FIND_BEST):
     "Some initial VDA logic put into its own function so it can be tested separately."
 
     assert isinstance(goal, Goal)
