@@ -10,5 +10,5 @@ for s in ('preorder', 'vda', 'util'):
 # Now do the ordinary imports.
 from artiruno.preorder import (
     PreorderedSet, IC, EQ, LT, GT, ContradictionError)
-from artiruno.vda import vda, Goal
+from artiruno.vda import vda
 from artiruno.util import *

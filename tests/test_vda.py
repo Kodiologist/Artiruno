@@ -1,7 +1,7 @@
 import random, itertools, inspect
 from collections import Counter
 import artiruno
-from artiruno import IC, LT, EQ, GT, vda, Goal, cmp, choose2
+from artiruno import IC, LT, EQ, GT, vda, cmp, choose2
 import pytest
 
 def test_assumptions():
@@ -10,8 +10,7 @@ def test_assumptions():
     yet.'''
 
     *_, prefs = artiruno.m.vda._setup(
-        criteria = ['abcd', ('bad', 'okay', 'good')],
-        goal = Goal.RANK_SPACE)
+        criteria = ['abcd', ('bad', 'okay', 'good')])
     assert prefs.cmp(('a', 'bad'), ('c', 'bad')) == LT
     assert prefs.cmp(('a', 'okay'), ('a', 'good')) == LT
     assert prefs.cmp(('d', 'good'), ('a', 'bad')) == GT
@@ -37,18 +36,18 @@ def test_appendixD():
 
     Proposal1, Proposal2, Proposal3 = alts
 
-    for goal in (Goal.FIND_BEST, Goal.RANK_ALTS, Goal.RANK_SPACE):
+    for goal in ('find_best', 'rank_alts', 'rank_space'):
         prefs = vda(
             criteria = criteria,
-            alts = alts,
+            alts = (None if goal == 'rank_alts' else alts),
             asker = asker,
-            goal = goal)
+            find_best = goal == 'find_best')
         assert prefs.maxes(among = alts) == {Proposal2}
-        if goal == Goal.RANK_SPACE:
+        if goal == 'rank_alts':
             for v1, v2 in choose2(dm_ranking):
                 assert prefs.cmp(v1, v2) == -cmp(
                     dm_ranking.index(v1), dm_ranking.index(v2))
-        if goal != Goal.FIND_BEST:
+        if goal != 'find_best':
             assert prefs.cmp(Proposal2, Proposal1) == GT
             assert prefs.cmp(Proposal2, Proposal3) == GT
             assert prefs.cmp(Proposal3, Proposal1) == GT
@@ -75,14 +74,14 @@ def test_simple_strings():
         else:
             return LT
 
-    for goal in (Goal.FIND_BEST, Goal.RANK_SPACE):
+    for find_best in (True, False):
         prefs = vda(
             criteria = criteria,
-            alts = alts,
+            alts = alts if find_best else None,
             asker = asker,
-            goal = goal)
+            find_best = find_best)
         assert prefs.maxes(among = alts) == {('good', 'expensive')}
-        if goal == Goal.RANK_SPACE:
+        if not find_best:
             assert prefs.maxes() == {('good', 'cheap')}
             ranking = (
                 ('bad', 'expensive'), ('bad', 'cheap'),
@@ -101,14 +100,13 @@ def test_one_criterion():
     for criterion_length in range(2, 10):
         prefs = artiruno.vda(
            criteria = [tuple(range(criterion_length))],
-           asker = asker_stub,
-           goal = Goal.RANK_SPACE)
+           asker = asker_stub)
         for i, j in choose2(range(criterion_length)):
             assert prefs.cmp((i,), (j,)) == LT
 
 def test_dominant_maximum():
-    '''Under Goal.FIND_BEST, if there's an alternative that dominates
-    all the others, we shouldn't need to ask any questions.'''
+    '''Under `find_best`, if there's an alternative that dominates all
+    the others, we shouldn't need to ask any questions.'''
 
     criteria = tuple(tuple(range(5)) for _ in range(4))
     alts = [
@@ -117,7 +115,7 @@ def test_dominant_maximum():
         (2, 4, 1, 3),
         (3, 0, 2, 3),
         (4, 4, 3, 4)]
-    prefs = artiruno.vda(criteria, alts, asker_stub, Goal.FIND_BEST)
+    prefs = artiruno.vda(criteria, alts, asker_stub, find_best = True)
     assert prefs.maxes(among = alts) == {(4, 4, 3, 4)}
 
 def test_big_item_space():
@@ -135,16 +133,17 @@ def test_big_item_space():
         criteria = criteria,
         alts = alts,
         asker = cmp,
-        goal = Goal.FIND_BEST,
+        find_best = True,
         max_dev = 3)
     assert prefs.cmp(tuple(alts[0]), tuple(alts[1])) == LT
 
 def all_choice_seqs(
-        criteria, alts = (), goal = Goal.FIND_BEST,
+        criteria, alts = None, find_best = True,
         max_dev = 2):
 
     choices = (LT, EQ, GT)
-    alts = tuple(map(tuple, alts))
+    if alts:
+        alts = tuple(map(tuple, alts))
     queue = [(c,) for c in choices]
     result = []
 
@@ -163,7 +162,7 @@ def all_choice_seqs(
             criteria = criteria,
             alts = alts,
             asker = asker,
-            goal = goal,
+            find_best = find_best,
             max_dev = max_dev)
         result[-1]['choices'] = queue[0]
         result[-1]['prefs'] = prefs
@@ -204,7 +203,7 @@ def test_recode_criteria():
 def test_irrelevant_criteria():
     for d in all_choice_seqs(
             criteria = ('abc', 'pqr', 'xyz'),
-            goal = Goal.RANK_SPACE):
+            find_best = False):
         def p(a, b):
             return d['prefs'].cmp(tuple(a), tuple(b))
         assert p('aqx', 'apy') == p('bqx', 'bpy') == p('cqx', 'cpy')
@@ -216,7 +215,6 @@ def test_lex_small():
     prefs = vda(
         criteria = criteria, alts = alts,
         asker = cmp,
-        goal = Goal.RANK_SPACE,
         max_dev = 3)
     assert prefs.cmp(*alts) == cmp(*alts)
 
@@ -240,7 +238,7 @@ def test_lex_big():
         criteria = criteria,
         alts = alts,
         asker = a,
-        goal = Goal.FIND_BEST,
+        find_best = True,
         max_dev = 3)
 
     prefs = p(lambda a, b: cmp(a[::-1], b[::-1]))
@@ -278,16 +276,16 @@ def random_scenarios(f):
             R = random.Random((criteria, trial))
             alts = R.sample(item_space,
                 min(len(item_space), R.randint(2, 8)))
-            goal = R.choice([Goal.FIND_BEST, Goal.RANK_ALTS])
+            find_best = R.choice([True, False])
             asker = f(criteria, R)
             def counting_asker(a, b):
                 nonlocal questions_asked
                 questions_asked += 1
                 return asker(a, b)
             prefs = vda(
-                criteria, alts, counting_asker, goal,
+                criteria, alts, counting_asker, find_best,
                 max_dev = 2*len(criteria))
-            if goal == Goal.FIND_BEST:
+            if find_best:
                 assert prefs.maxes(among = alts) == {
                     a
                     for a in alts

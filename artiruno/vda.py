@@ -2,19 +2,17 @@ import itertools, functools, math, enum
 from artiruno.preorder import PreorderedSet, IC, LT, EQ, GT
 from artiruno.util import cmp, choose2
 
-Goal = enum.Enum('Goal', 'FIND_BEST RANK_ALTS RANK_SPACE')
-
 class Jump(Exception):
     def __init__(self, value):
         self.value = value
 
-def vda(criteria, alts = (), asker = None, goal = Goal.FIND_BEST, max_dev = 2):
+def vda(criteria, alts = None, asker = None, find_best = False, max_dev = 2):
     """
 - `criteria` is an iterable of iterables specifying the levels of
   each criterion. Within a criterion, we assume that later levels are
   better.
-- `alts` is a list of the alternatives, each represented
-  as a tuple of the criteria.
+- `alts` is a list of the alternatives, each represented as a tuple of
+  the criteria. If it's `None`, we use the entire item space.
 - `asker` should be a callable object f(a, b) that returns
     GT (1) if a is better
     LT (-1) if b is better
@@ -24,7 +22,7 @@ def vda(criteria, alts = (), asker = None, goal = Goal.FIND_BEST, max_dev = 2):
   make choices. It's summed across both items; e.g., `max_dev == 5`
   allows 4 deviant criteria compared to 1 deviant criterion."""
 
-    criteria, alts, prefs = _setup(criteria, alts, goal)
+    criteria, alts, prefs = _setup(criteria, alts)
     assert 2 <= max_dev <= 2*len(criteria)
 
     def get_pref(a, b):
@@ -59,13 +57,13 @@ def vda(criteria, alts = (), asker = None, goal = Goal.FIND_BEST, max_dev = 2):
 
         while True:
 
-            if goal == Goal.FIND_BEST and len(prefs.maxes(alts)):
+            if find_best and len(prefs.maxes(alts)):
                 return prefs
 
             # Don't ask about pairs we already know.
             to_try = {x for x in to_try if prefs.cmp(*x) == IC}
 
-            if goal == Goal.FIND_BEST:
+            if find_best:
                 # Don't compare alternatives that can't be the best.
                 not_best = {x
                     for x in alts
@@ -108,10 +106,9 @@ def vda(criteria, alts = (), asker = None, goal = Goal.FIND_BEST, max_dev = 2):
 
     return prefs
 
-def _setup(criteria, alts = (), goal = Goal.FIND_BEST):
-    "Some initial VDA logic put into its own function so it can be tested separately."
-
-    assert isinstance(goal, Goal)
+def _setup(criteria, alts = None, find_best = None):
+    '''Some initial VDA logic put into its own function so it can be
+    tested separately.'''
 
     criteria = tuple(map(tuple, criteria))
     assert len(criteria)
@@ -119,7 +116,7 @@ def _setup(criteria, alts = (), goal = Goal.FIND_BEST):
         len(c) > 0 and len(c) == len(set(c))
         for c in criteria)
 
-    if goal == Goal.RANK_SPACE:
+    if alts is None:
         alts = tuple(itertools.product(*criteria))
     else:
         alts = tuple(map(tuple, alts))
