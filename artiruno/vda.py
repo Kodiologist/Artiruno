@@ -6,7 +6,7 @@ class Jump(Exception):
     def __init__(self, value):
         self.value = value
 
-def vda(criteria, alts = None, asker = None, find_best = False, max_dev = 2):
+def vda(criteria, alts = None, asker = None, find_best = None, max_dev = 2):
     """
 - `criteria` is an iterable of iterables specifying the levels of
   each criterion. Within a criterion, we assume that later levels are
@@ -17,6 +17,9 @@ def vda(criteria, alts = None, asker = None, find_best = False, max_dev = 2):
     GT (1) if a is better
     LT (-1) if b is better
     0 (EQ) if they're equally good
+- `find_best` can be set to an integer. If so, VDA will aim to
+  identify the top `find_best` items and stop there. Otherwise, we'll
+  try to compare all the alternatives.
 - `max_dev` sets the maximum number of criteria on which hypothetical
   items can deviate from the reference item when asking the user to
   make choices. It's summed across both items; e.g., `max_dev == 5`
@@ -24,6 +27,8 @@ def vda(criteria, alts = None, asker = None, find_best = False, max_dev = 2):
 
     criteria, alts, prefs = _setup(criteria, alts)
     assert 2 <= max_dev <= 2*len(criteria)
+    if find_best:
+        assert 1 <= find_best <= len(alts)
 
     def get_pref(a, b):
         add_items(criteria, prefs, [a, b])
@@ -57,17 +62,19 @@ def vda(criteria, alts = None, asker = None, find_best = False, max_dev = 2):
 
         while True:
 
-            if find_best and len(prefs.maxes(alts)):
+            if find_best and len(prefs.maxes(alts)) >= find_best:
                 return prefs
 
             # Don't ask about pairs we already know.
             to_try = {x for x in to_try if prefs.cmp(*x) == IC}
 
             if find_best:
-                # Don't compare alternatives that can't be the best.
+                # Don't compare alternatives that can't be in the
+                # requested `extreme` set.
                 not_best = {x
                     for x in alts
-                    if any(prefs.cmp(x, a) == LT for a in alts)}
+                    if sum(prefs.cmp(x, a) == LT for a in alts) >=
+                       find_best}
                 to_try = {(a, b)
                     for a, b in to_try
                     if a not in not_best and b not in not_best}

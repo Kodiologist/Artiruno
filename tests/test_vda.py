@@ -41,7 +41,7 @@ def test_appendixD():
             criteria = criteria,
             alts = (None if goal == 'rank_alts' else alts),
             asker = asker,
-            find_best = goal == 'find_best')
+            find_best = goal == 'find_best' and 1)
         assert prefs.maxes(among = alts) == {Proposal2}
         if goal == 'rank_alts':
             for v1, v2 in choose2(dm_ranking):
@@ -74,7 +74,7 @@ def test_simple_strings():
         else:
             return LT
 
-    for find_best in (True, False):
+    for find_best in (1, None):
         prefs = vda(
             criteria = criteria,
             alts = alts if find_best else None,
@@ -105,8 +105,8 @@ def test_one_criterion():
             assert prefs.cmp((i,), (j,)) == LT
 
 def test_dominant_maximum():
-    '''Under `find_best`, if there's an alternative that dominates all
-    the others, we shouldn't need to ask any questions.'''
+    '''Under `find_best = 1`, if there's an alternative that dominates
+    all the others, we shouldn't need to ask any questions.'''
 
     criteria = tuple(tuple(range(5)) for _ in range(4))
     alts = [
@@ -115,7 +115,7 @@ def test_dominant_maximum():
         (2, 4, 1, 3),
         (3, 0, 2, 3),
         (4, 4, 3, 4)]
-    prefs = artiruno.vda(criteria, alts, asker_stub, find_best = True)
+    prefs = artiruno.vda(criteria, alts, asker_stub, find_best = 1)
     assert prefs.maxes(among = alts) == {(4, 4, 3, 4)}
 
 def test_big_item_space():
@@ -138,7 +138,7 @@ def test_big_item_space():
     assert prefs.cmp(tuple(alts[0]), tuple(alts[1])) == LT
 
 def all_choice_seqs(
-        criteria, alts = None, find_best = True,
+        criteria, alts = None, find_best = 1,
         max_dev = 2):
 
     choices = (LT, EQ, GT)
@@ -203,7 +203,7 @@ def test_recode_criteria():
 def test_irrelevant_criteria():
     for d in all_choice_seqs(
             criteria = ('abc', 'pqr', 'xyz'),
-            find_best = False):
+            find_best = None):
         def p(a, b):
             return d['prefs'].cmp(tuple(a), tuple(b))
         assert p('aqx', 'apy') == p('bqx', 'bpy') == p('cqx', 'cpy')
@@ -238,7 +238,7 @@ def test_lex_big():
         criteria = criteria,
         alts = alts,
         asker = a,
-        find_best = True,
+        find_best = 1,
         max_dev = 3)
 
     prefs = p(lambda a, b: cmp(a[::-1], b[::-1]))
@@ -276,7 +276,7 @@ def random_scenarios(f):
             R = random.Random((criteria, trial))
             alts = R.sample(item_space,
                 min(len(item_space), R.randint(2, 8)))
-            find_best = R.choice([True, False])
+            find_best = R.choice([1, None])
             asker = f(criteria, R)
             def counting_asker(a, b):
                 nonlocal questions_asked
