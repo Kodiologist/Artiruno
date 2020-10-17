@@ -174,6 +174,7 @@ def all_choice_seqs(
 
     return result
 
+@pytest.mark.slow
 def test_recode_criteria():
     '''Renaming criterion values shouldn't change the questions asked
     or the results.'''
