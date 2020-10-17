@@ -74,14 +74,17 @@ def test_simple_strings():
         else:
             return LT
 
-    for find_best in (1, None):
+    for find_best in (1, 2, None):
         prefs = vda(
             criteria = criteria,
             alts = alts if find_best else None,
             asker = asker,
             find_best = find_best)
         assert prefs.maxes(among = alts) == {('good', 'expensive')}
-        if not find_best:
+        if find_best == 2:
+            assert prefs.extreme(2, among = alts) == {
+                ('good', 'expensive'), ('bad', 'cheap')}
+        elif not find_best:
             assert prefs.maxes() == {('good', 'cheap')}
             ranking = (
                 ('bad', 'expensive'), ('bad', 'cheap'),
@@ -234,20 +237,24 @@ def test_lex_big():
         (2, 2, 0),
         (1, 0, 1)]
 
-    def p(a): return vda(
+    def p(find_best, max_dev, a): return vda(
         criteria = criteria,
         alts = alts,
         asker = a,
-        find_best = 1,
-        max_dev = 3)
+        find_best = find_best,
+        max_dev = max_dev)
 
-    prefs = p(lambda a, b: cmp(a[::-1], b[::-1]))
+    prefs = p(1, 3, lambda a, b: cmp(a[::-1], b[::-1]))
     assert prefs.maxes() == {(2, 2, 2)}
     assert prefs.maxes(among = alts) == {(1, 0, 2)}
 
-    prefs = p(lambda a, b: cmp(a, b))
+    prefs = p(1, 3, lambda a, b: cmp(a, b))
     assert prefs.maxes() == {(2, 2, 2)}
     assert prefs.maxes(among = alts) == {(2, 2, 0)}
+
+    prefs = p(3, 4, lambda a, b: cmp(a, b))
+    assert prefs.extreme(3, among = alts) == {
+        (2, 2, 0), (2, 1, 1), (2, 1, 0)}
 
 def random_scenarios(f):
     '''For each of several trials, randomly generate alternatives, and
@@ -276,7 +283,10 @@ def random_scenarios(f):
             R = random.Random((criteria, trial))
             alts = R.sample(item_space,
                 min(len(item_space), R.randint(2, 8)))
-            find_best = R.choice([1, None])
+            find_best = R.choice([True, None])
+            if find_best is True:
+                find_best = R.choice(
+                    [i for i in [1, 2, 3] if i < len(alts)])
             asker = f(criteria, R)
             def counting_asker(a, b):
                 nonlocal questions_asked
@@ -286,10 +296,11 @@ def random_scenarios(f):
                 criteria, alts, counting_asker, find_best,
                 max_dev = 2*len(criteria))
             if find_best:
-                assert prefs.maxes(among = alts) == {
+                assert prefs.extreme(find_best, among = alts) == {
                     a
                     for a in alts
-                    if all(asker(a, b) in (GT, EQ) for b in alts)}
+                    for cmps in [Counter(asker(a, b) for b in alts)]
+                    if cmps[IC] == 0 and cmps[LT] < find_best}
             else:
                 for a, b in choose2(alts):
                     assert prefs.cmp(a, b) == asker(a, b)
@@ -304,7 +315,7 @@ def random_scenarios(f):
 
 @random_scenarios
 def test_lex_generalized(criteria, R,
-        n_questions = (11, 27, 25, 22, 23, 54, 84, 306)):
+        n_questions = (15, 34, 33, 35, 30, 72, 86, 472)):
     '''Artiruno should be able to reproduce lexicographic preferences,
     in which the criteria have a defined order of importance.'''
     criterion_order = R.sample(range(len(criteria)), len(criteria))
@@ -314,7 +325,7 @@ def test_lex_generalized(criteria, R,
 
 @random_scenarios
 def test_value_function(criteria, R,
-        n_questions = (11, 28, 38, 23, 23, 66, 67, 475)):
+        n_questions = (15, 34, 53, 35, 33, 87, 77, 686)):
     '''Artiruno should be able to reproduce preferences defined by an
     additive value function, in which each criterion increment adds a
     certain positive amount of utility.'''
