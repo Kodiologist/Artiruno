@@ -4,7 +4,7 @@
 import importlib
 class C: pass
 m = C()
-for s in ('util', 'preorder', 'vda'):
+for s in ('util', 'preorder', 'vda', 'interactive'):
     setattr(m, s, importlib.import_module('artiruno.' + s))
 
 # Now do the ordinary imports.

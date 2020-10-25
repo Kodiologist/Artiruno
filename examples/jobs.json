@@ -1,0 +1,47 @@
+{
+
+"comment":
+    "The criteria are from Larichev and Moshkovich (1995), appendix A.",
+
+"find_best": 1,
+
+"criteria": {
+    "Salary": ["Below average", "Average", "High"],
+    "Location": ["Far", "Some distance", "Almost ideal"],
+    "Type": ["Inappropriate", "Good enough", "Almost ideal"],
+    "Training possibilites": ["Almost none", "Normal", "Nice"],
+    "Promotion possibilites": ["Almost none", "Moderate", "Good"]},
+
+"alts": {
+    "Job A": {
+        "Salary": "Below average",
+        "Location": "Some distance",
+        "Type": "Inappropriate",
+        "Training possibilites": "Nice",
+        "Promotion possibilites": "Moderate"},
+    "Job B": {
+        "Salary": "Average",
+        "Location": "Far",
+        "Type": "Inappropriate",
+        "Training possibilites": "Normal",
+        "Promotion possibilites": "Moderate"},
+    "Job C": {
+        "Salary": "Below average",
+        "Location": "Some distance",
+        "Type": "Good enough",
+        "Training possibilites": "Nice",
+        "Promotion possibilites": "Good"},
+    "Job D": {
+        "Salary": "Average",
+        "Location": "Some distance",
+        "Type": "Good enough",
+        "Training possibilites": "Nice",
+        "Promotion possibilites": "Moderate"},
+    "Job E": {
+        "Salary": "High",
+        "Location": "Some distance",
+        "Type": "Inappropriate",
+        "Training possibilites": "Nice",
+        "Promotion possibilites": "Good"}}
+
+}
