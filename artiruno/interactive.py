@@ -12,7 +12,7 @@ def interact(criterion_names, alts, alt_names, **kwargs):
             item = {GT: a, LT: b, EQ: None}[v]
             print(f'\n({k})' + (
                 ' <<< ' + alt_names[alts.index(item)]
-                    if item in alts else ''))
+                    if alt_names and item in alts else ''))
             if v == EQ:
                 print('  The two options are equally preferable')
             else:
@@ -37,11 +37,12 @@ def main():
     with open(sys.argv[1]) as o:
         scenario = json.load(o)
 
+    alt_names = None
     if alts := scenario.get('alts'):
-        alts = list(alts.items())
-        alt_names = tuple(k for k, _ in alts)
+        if isinstance(alts, dict):
+            alt_names, alts = zip(*alts.items())
         alts = tuple(tuple(a[c] for c in scenario['criteria'])
-            for _, a in alts)
+            for a in alts)
 
     prefs = interact(
         criterion_names = list(scenario['criteria']),
@@ -52,9 +53,10 @@ def main():
         max_dev = 2 * len(scenario['criteria']))
 
     print("Best:", ", ".join(
-        alt_names[alts.index(a)]
+        alt_names[alts.index(a)] if alt_names else str(a)
         for a in prefs.maxes(alts)))
 
     (prefs.get_subset(alts)
-        .graph(namer = lambda a: alt_names[alts.index(a)])
+        .graph(namer = (lambda a: alt_names[alts.index(a)])
+            if alt_names else str)
         .render(filename = '/tmp/graph', format = 'png', view = True))

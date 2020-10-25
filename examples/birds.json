@@ -1,0 +1,24 @@
+{
+
+"find_best": 1,
+
+"criteria": {
+    "Attack": [85, 90, 100],
+    "Defense": [85, 90, 100],
+    "Speed": [85, 90, 100]},
+
+"alts": [
+    {
+        "Attack": 85,
+        "Defense": 100,
+        "Speed": 85},
+    {
+        "Attack": 90,
+        "Defense": 85,
+        "Speed": 100},
+    {
+        "Attack": 100,
+        "Defense": 90,
+        "Speed": 90}]
+
+}
