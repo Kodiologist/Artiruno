@@ -138,7 +138,7 @@ def test_learn_return_value():
 def graph_example():
     x = test_complex()
     x.learn("a", "x", LT)
-    x.render("/tmp/graph", format = 'png', view = True)
+    x.graph().render("/tmp/graph", format = 'png', view = True)
 
 if __name__ == '__main__':
     graph_example()

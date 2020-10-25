@@ -142,6 +142,3 @@ class PreorderedSet:
         return graphviz.Source(subprocess
             .Popen(["tred"], stdin = subprocess.PIPE, stdout = subprocess.PIPE)
             .communicate(g.source.encode('UTF-8'))[0].decode('UTF-8'))
-
-    def render(self, *args, **kwargs):
-        return self.graph().render(*args, **kwargs)
