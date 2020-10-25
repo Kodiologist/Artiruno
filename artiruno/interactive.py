@@ -1,4 +1,5 @@
 import sys, json
+from tempfile import mktemp
 from artiruno.preorder import LT, EQ, GT
 from artiruno.vda import vda
 
@@ -59,4 +60,4 @@ def main():
     (prefs.get_subset(alts)
         .graph(namer = (lambda a: alt_names[alts.index(a)])
             if alt_names else str)
-        .render(filename = '/tmp/graph', format = 'png', view = True))
+        .render(filename = mktemp(), format = 'png', view = True))
