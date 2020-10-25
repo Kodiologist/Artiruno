@@ -110,7 +110,7 @@ class PreorderedSet:
                 for (a, b), rel in self.relations.items()
                 if rel != IC))
 
-    def graph(self):
+    def graph(self, namer = str):
         import subprocess
         import graphviz
 
@@ -128,7 +128,7 @@ class PreorderedSet:
 
         # Add the nodes to the graph.
         def node_repr(node):
-            return " / ".join(map(str, sorted(node)))
+            return " / ".join(map(namer, sorted(node)))
         for node in nodes:
             g.node(node_repr(node))
 
