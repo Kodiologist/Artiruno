@@ -52,7 +52,7 @@ def vda(criteria, alts = None, asker = None, find_best = None, max_dev = 2):
         return tuple(criteria[i].index(v) for i, v in enumerate(item))
 
     for allowed_pairs in (l[::-1] for l in itertools.accumulate(
-           [(big, small), (small, big)]
+           [(big, small)] + ([] if big == small else [(small, big)])
            for deviation in range(1, max_dev)
            for big in range(deviation, deviation // 2, -1)
            for small in [deviation + 1 - big]
