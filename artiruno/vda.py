@@ -6,6 +6,8 @@ class Jump(Exception):
     def __init__(self, value):
         self.value = value
 
+class Abort(Exception): pass
+
 def vda(
         criteria, alts = None, asker = None, find_best = None,
         max_dev = 2, allowed_pairs_callback = lambda x: None):
@@ -116,6 +118,8 @@ def vda(
                 f(EQ, cs, cs)
             except Jump as j:
                 prefs.learn(a, b, j.value)
+            except Abort:
+                return prefs
 
     return prefs
 

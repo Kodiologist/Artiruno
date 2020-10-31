@@ -1,24 +1,23 @@
 import sys, json
 from tempfile import mktemp
 from artiruno.preorder import LT, EQ, GT
-from artiruno.vda import vda
+from artiruno.vda import vda, Abort
 
 def interact(criterion_names, alts, alt_names, **kwargs):
 
     def asker(a, b):
         print('\nWhich do you prefer?')
 
-        options = dict(a = GT, b = LT, c = EQ)
-        for k, v in sorted(options.items()):
-            item = {GT: a, LT: b, EQ: None}[v]
+        options = dict(a = GT, b = LT, e = EQ, q = Abort)
+        for k in 'a', 'b':
+            item = dict(a = a, b = b)[k]
             print(f'\n({k})' + (
                 ' <<< ' + alt_names[alts.index(item)]
                     if alt_names and item in alts else ''))
-            if v == EQ:
-                print('  The two options are equally preferable')
-            else:
-                for name, value in zip(criterion_names, item):
-                    print(f'- {name}: {value}')
+            for name, value in zip(criterion_names, item):
+                print(f'- {name}: {value}')
+        print('\n(e) The two options are equally preferable')
+        print('(q) Abort')
 
         print('')
         while True:
@@ -26,11 +25,16 @@ def interact(criterion_names, alts, alt_names, **kwargs):
                 inp = input('> ').strip().lower()
             except (EOFError, KeyboardInterrupt):
                 print('Aborted.')
-                raise artiruno.Abort()
+                raise Abort()
             try:
-                return options[inp]
+                v = options[inp]
             except KeyError:
                 print('Invalid input.')
+                continue
+            if v is Abort:
+                print('Aborted.')
+                raise Abort()
+            return v
 
     return vda(
         asker = asker,
