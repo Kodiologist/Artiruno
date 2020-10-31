@@ -316,7 +316,7 @@ def random_scenarios(f):
 
 @random_scenarios
 def test_lex_generalized(criteria, R,
-        n_questions = (15, 34, 33, 35, 30, 72, 86, 472)):
+        n_questions = (15, 34, 33, 35, 30, 75, 86, 463)):
     '''Artiruno should be able to reproduce lexicographic preferences,
     in which the criteria have a defined order of importance.'''
     criterion_order = R.sample(range(len(criteria)), len(criteria))
@@ -326,7 +326,7 @@ def test_lex_generalized(criteria, R,
 
 @random_scenarios
 def test_value_function(criteria, R,
-        n_questions = (15, 34, 53, 35, 33, 87, 77, 686)):
+        n_questions = (15, 34, 53, 35, 33, 86, 76, 652)):
     '''Artiruno should be able to reproduce preferences defined by an
     additive value function, in which each criterion increment adds a
     certain positive amount of utility.'''

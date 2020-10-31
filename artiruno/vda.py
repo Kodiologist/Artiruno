@@ -51,12 +51,12 @@ def vda(criteria, alts = None, asker = None, find_best = None, max_dev = 2):
         of criteria, though.)'''
         return tuple(criteria[i].index(v) for i, v in enumerate(item))
 
-    for allowed_pairs in itertools.accumulate(
+    for allowed_pairs in (l[::-1] for l in itertools.accumulate(
            [(big, small), (small, big)]
            for deviation in range(1, max_dev)
            for big in range(deviation, deviation // 2, -1)
            for small in [deviation + 1 - big]
-           if small <= len(criteria)):
+           if small <= len(criteria))):
 
         to_try = set(choose2(sorted(alts, key = num_item)))
 
@@ -95,10 +95,10 @@ def vda(criteria, alts = None, asker = None, find_best = None, max_dev = 2):
                 def f(rel, cs1, cs2):
                     if not cs1:
                         raise Jump(rel)
-                    for size1, size2 in allowed_pairs[
+                    for size1, size2 in allowed_pairs[:
                             # In the topmost call of `f`, force use of the
                             # new allowed_pairs, to save pointless iterations.
-                            -2 if len(cs1) == len(criteria) else 0:]:
+                            2 if len(cs1) == len(criteria) else None]:
                         if (len(cs1) - size1 < 0 or len(cs2) - size2 < 0 or
                                 (len(cs1) - size1 == 0) != (len(cs2) - size2 == 0)):
                             continue
