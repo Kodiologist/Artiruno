@@ -6,7 +6,9 @@ class Jump(Exception):
     def __init__(self, value):
         self.value = value
 
-def vda(criteria, alts = None, asker = None, find_best = None, max_dev = 2):
+def vda(
+        criteria, alts = None, asker = None, find_best = None,
+        max_dev = 2, allowed_pairs_callback = lambda x: None):
     """
 - `criteria` is an iterable of iterables specifying the levels of
   each criterion. Within a criterion, we assume that later levels are
@@ -23,7 +25,9 @@ def vda(criteria, alts = None, asker = None, find_best = None, max_dev = 2):
 - `max_dev` sets the maximum number of criteria on which hypothetical
   items can deviate from the reference item when asking the user to
   make choices. It's summed across both items; e.g., `max_dev == 5`
-  allows 4 deviant criteria compared to 1 deviant criterion."""
+  allows 4 deviant criteria compared to 1 deviant criterion.
+- `allowed_pairs_callback` is called on `allowed_pairs` for each
+  iteration of the outermost loop."""
 
     criteria, alts, prefs = _setup(criteria, alts)
     assert 2 <= max_dev <= 2*len(criteria)
@@ -57,6 +61,8 @@ def vda(criteria, alts = None, asker = None, find_best = None, max_dev = 2):
            for big in range(deviation, deviation // 2, -1)
            for small in [deviation + 1 - big]
            if small <= len(criteria))):
+
+        allowed_pairs_callback(allowed_pairs)
 
         to_try = set(choose2(sorted(alts, key = num_item)))
 

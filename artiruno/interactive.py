@@ -32,7 +32,15 @@ def interact(criterion_names, alts, alt_names, **kwargs):
             except KeyError:
                 print('Invalid input.')
 
-    return vda(asker = asker, alts = alts, **kwargs)
+    return vda(
+        asker = asker,
+        alts = alts,
+        allowed_pairs_callback = apc,
+        **kwargs)
+
+def apc(allowed_pairs):
+    if len(allowed_pairs) > 1:
+        print("Allowed pairs now:", allowed_pairs[0])
 
 def main():
     with open(sys.argv[1]) as o:
