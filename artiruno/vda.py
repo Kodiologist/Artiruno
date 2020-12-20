@@ -1,4 +1,5 @@
 from itertools import accumulate, combinations, product
+import inspect
 from artiruno.preorder import PreorderedSet, IC, LT, EQ, GT
 from artiruno.util import cmp, choose2
 
@@ -8,7 +9,11 @@ class Jump(Exception):
 
 class Abort(Exception): pass
 
-def vda(
+def vda(*args, **kwargs):
+    import asyncio
+    return asyncio.run(avda(*args, **kwargs))
+
+async def avda(
         criteria, alts = None, asker = None, find_best = None,
         max_dev = 2, allowed_pairs_callback = lambda x: None):
     """
@@ -36,10 +41,13 @@ def vda(
     if find_best:
         assert 1 <= find_best <= len(alts)
 
-    def get_pref(a, b):
+    async def get_pref(a, b):
         add_items(criteria, prefs, [a, b])
         if (rel := prefs.cmp(a, b)) is None:
-            prefs.learn(a, b, rel := asker(a, b))
+            rel = asker(a, b)
+            if inspect.isawaitable(rel):
+                rel = await rel
+            prefs.learn(a, b, rel)
         return rel
 
     def dev_from_ref(dev_criteria, vector):
@@ -100,7 +108,7 @@ def vda(
                 for ci in range(len(criteria))
                 if a[ci] != b[ci]})
             try:
-                def f(rel, cs1, cs2):
+                async def f(rel, cs1, cs2):
                     if not cs1:
                         raise Jump(rel)
                     for size1, size2 in allowed_pairs[:
@@ -112,10 +120,10 @@ def vda(
                             continue
                         for c1 in combinations(sorted(cs1), size1):
                             for c2 in combinations(sorted(cs2), size2):
-                                p = get_pref(dev_from_ref(c1, a), dev_from_ref(c2, b))
+                                p = await get_pref(dev_from_ref(c1, a), dev_from_ref(c2, b))
                                 if rel == EQ or p in (EQ, rel):
-                                    f(rel or p, cs1.difference(c1), cs2.difference(c2))
-                f(EQ, cs, cs)
+                                    await f(rel or p, cs1.difference(c1), cs2.difference(c2))
+                await f(EQ, cs, cs)
             except Jump as j:
                 prefs.learn(a, b, j.value)
             except Abort:

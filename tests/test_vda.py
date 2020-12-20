@@ -1,7 +1,7 @@
-import random, itertools, inspect
+import random, itertools, inspect, asyncio
 from collections import Counter
 import artiruno
-from artiruno import IC, LT, EQ, GT, vda, cmp, choose2
+from artiruno import IC, LT, EQ, GT, vda, avda, cmp, choose2
 import pytest
 
 def test_assumptions():
@@ -91,6 +91,36 @@ def test_simple_strings():
                 ('good', 'expensive'), ('good', 'cheap'))
             for (ai, a), (bi, b) in choose2(enumerate(ranking)):
                 assert prefs.cmp(a, b) == cmp(ai, bi)
+
+def test_async():
+    criteria = ((0, 1), (0, 1))
+    alts = ((0, 1), (1, 0))
+    l = []
+
+    async def f():
+        queue = asyncio.Queue()
+        async def asker(a, b):
+            l.append('start')
+            queue.put_nowait(1)
+            await queue.join()
+            l.append('done')
+            return cmp(a, b)
+        async def other():
+            await queue.get()
+            l.append('in other')
+            queue.task_done()
+        return (await asyncio.gather(
+            other(),
+            avda(
+                criteria = criteria,
+                alts = alts,
+                asker = asker,
+                find_best = 1)))[1]
+
+    prefs = asyncio.run(f())
+
+    assert prefs.maxes(alts) == {(1, 0)}
+    assert l == ['start', 'in other', 'done']
 
 def asker_stub(a, b):
     raise ValueError
