@@ -1,4 +1,4 @@
-import itertools, functools, math, enum
+from itertools import accumulate, combinations, product
 from artiruno.preorder import PreorderedSet, IC, LT, EQ, GT
 from artiruno.util import cmp, choose2
 
@@ -57,7 +57,7 @@ def vda(
         of criteria, though.)'''
         return tuple(criteria[i].index(v) for i, v in enumerate(item))
 
-    for allowed_pairs in (l[::-1] for l in itertools.accumulate(
+    for allowed_pairs in (l[::-1] for l in accumulate(
            [(big, small)] + ([] if big == small else [(small, big)])
            for deviation in range(1, max_dev)
            for big in range(deviation, deviation // 2, -1)
@@ -110,8 +110,8 @@ def vda(
                         if (len(cs1) - size1 < 0 or len(cs2) - size2 < 0 or
                                 (len(cs1) - size1 == 0) != (len(cs2) - size2 == 0)):
                             continue
-                        for c1 in itertools.combinations(sorted(cs1), size1):
-                            for c2 in itertools.combinations(sorted(cs2), size2):
+                        for c1 in combinations(sorted(cs1), size1):
+                            for c2 in combinations(sorted(cs2), size2):
                                 p = get_pref(dev_from_ref(c1, a), dev_from_ref(c2, b))
                                 if rel == EQ or p in (EQ, rel):
                                     f(rel or p, cs1.difference(c1), cs2.difference(c2))
@@ -134,7 +134,7 @@ def _setup(criteria, alts = None, find_best = None):
         for c in criteria)
 
     if alts is None:
-        alts = tuple(itertools.product(*criteria))
+        alts = tuple(product(*criteria))
     else:
         alts = tuple(map(tuple, alts))
         assert all(
