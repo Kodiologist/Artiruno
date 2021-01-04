@@ -45,11 +45,13 @@ class PreorderedSet:
         return self.relations[a, b] if a < b else invert_rel(self.relations[b, a])
 
     def extreme(self, n, among = None, bottom = False):
+        rel = GT if bottom else LT
+          # Work around https://github.com/brython-dev/brython/issues/1535
         return frozenset(x
             for x in among or self.elements
             for cmps in [Counter(
                 self.cmp(x, a) for a in among or self.elements)]
-            if cmps[IC] == 0 and cmps[GT if bottom else LT] < n)
+            if cmps[IC] == 0 and cmps[rel] < n)
 
     def maxes(self, among = None):
         return self.extreme(1, among, bottom = False)

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+<title>Artiruno verbal decision analysis</title>
+<meta charset="UTF-8">
+
+<!-- SCRIPSTY -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.9.0/brython.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.9.0/brython_stdlib.js"></script>
+<style type="text/css">
+
+#loading-message
+   {font-style: italic;
+    padding: 1em;
+    background: #ccf;
+    color: black;}
+
+#problem-definition
+   {width: 100%;
+    min-height: 6em;}
+
+.chosen
+   {border: thin solid black;
+    color: black;
+    background: white;
+    padding-left: .5em;
+    padding-right: .5em;
+    margin-right: .5em;}
+
+</style>
+<!-- SCRIPSTY -->
+
+</head>
+
+<body onload="brython({cache: true})">
+
+<noscript>
+<p>This web interface to Artiruno is implemented in JavaScript.
+For a command-line interface, see
+<a href="https://github.com/Kodiologist/Artiruno">the Python package</a>.
+</p>
+</noscript>
+
+<div>
+<label>Problem definition
+<br>
+<textarea id="problem-definition"></textarea></label>
+</div>
+
+<div>
+<button id="start-button">Start decision-making</button>
+</div>
+
+<hr>
+
+<p id="loading-message"></p>
+
+<div id="dm">
+
+</div>
+
+<script type="text/python">
+try:
+    import browser
+    browser.document['loading-message'].textContent = 'Loading…'
+    import artiruno
+    artiruno.initialize_web_interface()
+except Exception as e:
+    browser.document['dm'].textContent = repr(e)
+finally:
+    browser.document['loading-message'].remove()
+</script>
+
+</body></html>
