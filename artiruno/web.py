@@ -89,10 +89,22 @@ async def interact(criterion_names, alts, alt_names, **kwargs):
             buttons[the_id] = lambda _: signal('choice', the_id)
             return H.BUTTON(text, id = the_id)
 
+        def display_item(item):
+            # Display the item as a list with one criterion and value
+            # per list item. Highlight the criteria value that differ
+            # between the two options.
+            return H.UL([
+                 H.LI([name + ': ',
+                     (value if a[i] == b[i] else H.STRONG(value))])
+                 for i, (name, value)
+                 in enumerate(zip(criterion_names, item))])
+
         document['dm'] <= H.DIV(
             [H.P('Q{}: Which would you prefer?'.format(n_questions)), H.UL([
-                H.LI([button('option_a', 'Option A'), str(a)]),
-                H.LI([button('option_b', 'Option B'), str(b)]),
+                H.LI([button('option_a', 'Option A'),
+                    display_item(a)]),
+                H.LI([button('option_b', 'Option B'),
+                    display_item(b)]),
                 H.LI([button('equal', 'Equal'),
                     'The two options are equally preferable'])])],
             Class = 'query')
@@ -105,14 +117,11 @@ async def interact(criterion_names, alts, alt_names, **kwargs):
         if choice == 'quit':
             raise Quit()
 
-        # Remove the buttons. Leave an indicator of which one was
-        # pushed.
+        # Replace the buttons with indicators of the user's decision.
         for button in buttons:
-            if button == choice:
-                document[choice].replaceWith(
-                    H.SPAN('your choice', Class = 'chosen'))
-            else:
-                document[button].remove()
+            document[button].replaceWith(H.SPAN(
+               'your choice' if button == choice else 'not chosen',
+               Class = 'chosen' if button == choice else 'not-chosen'))
 
         # Return the choice.
         return dict(option_a = GT, option_b = LT, equal = EQ)[choice]
