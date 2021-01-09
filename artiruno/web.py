@@ -16,6 +16,8 @@ class Quit(Exception): pass
 def initialize_web_interface():
     with open('examples/jobs.json', 'r') as o:
         document['problem-definition'].value = o.read().strip()
+    (document['start-button-parent'] <=
+        H.BUTTON('Start decision-making', id = 'start-button'))
     document['start-button'].bind('click', restart_decision_making)
 
 def restart_decision_making(_):

@@ -42,34 +42,38 @@ For a command-line interface, see
 </p>
 </noscript>
 
+<p id="loading-message"></p>
+
 <div>
 <label>Problem definition
 <br>
 <textarea id="problem-definition"></textarea></label>
 </div>
 
-<div>
-<button id="start-button">Start decision-making</button>
+<div id='start-button-parent'>
 </div>
 
 <hr>
-
-<p id="loading-message"></p>
 
 <div id="dm">
 
 </div>
 
 <script type="text/python">
-try:
-    import browser
-    browser.document['loading-message'].textContent = 'Loading…'
-    import artiruno
-    artiruno.initialize_web_interface()
-except Exception as e:
-    browser.document['dm'].textContent = repr(e)
-finally:
-    browser.document['loading-message'].remove()
+import browser, browser.aio
+browser.document['loading-message'].textContent = 'Loading…'
+# The below code is wrapped in an asynchornous function and begins
+# with sleep(0) so that the loading message is drawn before it runs.
+async def f():
+    await browser.aio.sleep(0)
+    try:
+        import artiruno
+        artiruno.initialize_web_interface()
+    except Exception as e:
+        browser.document['dm'].textContent = repr(e)
+    finally:
+        browser.document['loading-message'].remove()
+browser.aio.run(f())
 </script>
 
 </body></html>
