@@ -2,6 +2,7 @@ import sys, json
 from tempfile import mktemp
 from artiruno.preorder import LT, EQ, GT
 from artiruno.vda import vda, Abort
+from artiruno._version import __version__
 
 def interact(criterion_names, alts, alt_names, **kwargs):
 
@@ -47,6 +48,8 @@ def apc(allowed_pairs):
         print("Allowed pairs now:", allowed_pairs[0])
 
 def main():
+    print('Artiruno', __version__)
+
     with open(sys.argv[1]) as o:
         scenario = json.load(o)
 

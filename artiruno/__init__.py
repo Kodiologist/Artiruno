@@ -14,6 +14,7 @@ if platform.python_implementation() == 'Brython':
    from artiruno.web import initialize_web_interface
 
 # Now do the ordinary imports.
+from artiruno._version import __version__
 from artiruno.util import *
 from artiruno.preorder import (
     PreorderedSet, IC, EQ, LT, GT, ContradictionError)

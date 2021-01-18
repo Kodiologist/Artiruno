@@ -1,10 +1,14 @@
-import setuptools
+import setuptools, ast
 
 with open('README.rst', 'r') as o:
     long_description = o.read()
 
+with open('artiruno/_version.py', 'r') as o:
+    version = ast.literal_eval(ast.parse(o.read()).body[0].value)
+
 setuptools.setup(
     name = 'artiruno',
+    version = version,
     author = 'Kodi B. Arfer',
     description = 'Verbal decision analysis',
     long_description = long_description,
