@@ -1,3 +1,5 @@
 __pycache__/
 /.pytest-cache
 /artiruno.egg-info
+/build
+/dist
