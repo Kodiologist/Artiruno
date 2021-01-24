@@ -1,7 +1,7 @@
 import random, itertools, inspect, asyncio
 from collections import Counter
 import artiruno
-from artiruno import IC, LT, EQ, GT, vda, avda, cmp, choose2
+from artiruno import Relation, IC, LT, EQ, GT, vda, avda, cmp, choose2
 import pytest
 
 def test_assumptions():
@@ -32,7 +32,7 @@ def test_appendixD():
       # The first element is the best, so we negate `cmp` in the
       # asker.
     def asker(a, b):
-        return -cmp(dm_ranking.index(a), dm_ranking.index(b))
+        return -Relation.cmp(dm_ranking.index(a), dm_ranking.index(b))
 
     Proposal1, Proposal2, Proposal3 = alts
 
@@ -45,7 +45,7 @@ def test_appendixD():
         assert prefs.maxes(among = alts) == {Proposal2}
         if goal == 'rank_alts':
             for v1, v2 in choose2(dm_ranking):
-                assert prefs.cmp(v1, v2) == -cmp(
+                assert prefs.cmp(v1, v2) == -Relation.cmp(
                     dm_ranking.index(v1), dm_ranking.index(v2))
         if goal != 'find_best':
             assert prefs.cmp(Proposal2, Proposal1) == GT
@@ -90,7 +90,7 @@ def test_simple_strings():
                 ('bad', 'expensive'), ('bad', 'cheap'),
                 ('good', 'expensive'), ('good', 'cheap'))
             for (ai, a), (bi, b) in choose2(enumerate(ranking)):
-                assert prefs.cmp(a, b) == cmp(ai, bi)
+                assert prefs.cmp(a, b) == Relation.cmp(ai, bi)
 
 def test_async():
     criteria = ((0, 1), (0, 1))
@@ -104,7 +104,7 @@ def test_async():
             queue.put_nowait(1)
             await queue.join()
             l.append('done')
-            return cmp(a, b)
+            return Relation.cmp(a, b)
         async def other():
             await queue.get()
             l.append('in other')
@@ -165,7 +165,7 @@ def test_big_item_space():
     prefs = vda(
         criteria = criteria,
         alts = alts,
-        asker = cmp,
+        asker = Relation.cmp,
         find_best = True,
         max_dev = 3)
     assert prefs.cmp(tuple(alts[0]), tuple(alts[1])) == LT
@@ -248,9 +248,9 @@ def test_lex_small():
     alts = [(1, 0, 0), (0, 1, 1)]
     prefs = vda(
         criteria = criteria, alts = alts,
-        asker = cmp,
+        asker = Relation.cmp,
         max_dev = 3)
-    assert prefs.cmp(*alts) == cmp(*alts)
+    assert prefs.cmp(*alts) == Relation.cmp(*alts)
 
 def test_lex_big():
 
@@ -275,15 +275,15 @@ def test_lex_big():
         find_best = find_best,
         max_dev = max_dev)
 
-    prefs = p(1, 3, lambda a, b: cmp(a[::-1], b[::-1]))
+    prefs = p(1, 3, lambda a, b: Relation.cmp(a[::-1], b[::-1]))
     assert prefs.maxes() == {(2, 2, 2)}
     assert prefs.maxes(among = alts) == {(1, 0, 2)}
 
-    prefs = p(1, 3, lambda a, b: cmp(a, b))
+    prefs = p(1, 3, lambda a, b: Relation.cmp(a, b))
     assert prefs.maxes() == {(2, 2, 2)}
     assert prefs.maxes(among = alts) == {(2, 2, 0)}
 
-    prefs = p(3, 4, lambda a, b: cmp(a, b))
+    prefs = p(3, 4, lambda a, b: Relation.cmp(a, b))
     assert prefs.extreme(3, among = alts) == {
         (2, 2, 0), (2, 1, 1), (2, 1, 0)}
 
@@ -350,7 +350,7 @@ def test_lex_generalized(criteria, R,
     '''Artiruno should be able to reproduce lexicographic preferences,
     in which the criteria have a defined order of importance.'''
     criterion_order = R.sample(range(len(criteria)), len(criteria))
-    return lambda a, b: cmp(*(
+    return lambda a, b: Relation.cmp(*(
         tuple(v[i] for i in criterion_order)
         for v in (a, b)))
 
@@ -364,7 +364,7 @@ def test_value_function(criteria, R,
        tuple(0 if i == 0 else R.randint(1, 4)
            for i in range(len(c)))
        for c in criteria)
-    return lambda a, b: cmp(*(
+    return lambda a, b: Relation.cmp(*(
        sum(sum(values[ci][: cl + 1])
            for ci, cl in enumerate(item))
        for item in (a, b)))

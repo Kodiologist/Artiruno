@@ -1,5 +1,5 @@
 from artiruno import (
-    PreorderedSet, IC, LT, EQ, GT, ContradictionError, cmp, choose2)
+    PreorderedSet, Relation, IC, LT, EQ, GT, ContradictionError, cmp, choose2)
 import pytest
 
 def test_simple():
@@ -93,7 +93,7 @@ def test_extreme_n():
         for l in "wxyz"
         for i in range(3))
     for a, b in choose2(x.elements):
-        x.learn(a, b, cmp(a[0], b[0]))
+        x.learn(a, b, Relation.cmp(a[0], b[0]))
 
     assert (x.maxes() == x.extreme(2) == x.extreme(3) ==
         {"z0", "z1", "z2"})

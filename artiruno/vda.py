@@ -1,6 +1,6 @@
 from itertools import accumulate, combinations, product
 import inspect
-from artiruno.preorder import PreorderedSet, IC, LT, EQ, GT
+from artiruno.preorder import PreorderedSet, Relation, IC, LT, EQ, GT
 from artiruno.util import cmp, choose2
 
 class Jump(Exception):
@@ -167,7 +167,8 @@ def add_items(criteria, prefs, items):
         prefs.add(x)
         for a in prefs.elements - {x}:
             cmps = [
-                cmp(criteria[ci].index(x[ci]),
+                Relation.cmp(
+                    criteria[ci].index(x[ci]),
                     criteria[ci].index(a[ci]))
                 for ci in range(len(criteria))]
             if not (LT in cmps and GT in cmps):

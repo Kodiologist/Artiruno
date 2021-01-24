@@ -1,15 +1,28 @@
-import itertools
+import itertools, enum
 from collections import Counter
-from artiruno.util import choose2
+from artiruno.util import cmp, choose2
 
-IC, LT, EQ, GT = None, -1, 0, 1
-  # The types of relations: incomparable, less than, equivalent, greater than
+class Relation(enum.Enum):
+    # The types of relations: incomparable, less than, equivalent, greater than
+    IC = None
+    LT = -1
+    EQ = 0
+    GT = 1
 
-def invert_rel(rel):
-    return (
-        LT if rel == GT else
-        GT if rel == LT else
-        rel)
+    def __bool__(self):
+        return bool(self.value)
+
+    def __neg__(self):
+        return (
+            LT if self == GT else
+            GT if self == LT else
+            self)
+
+    @classmethod
+    def cmp(cls, a, b):
+        return cls(cmp(a, b))
+
+IC, LT, EQ, GT = Relation.IC, Relation.LT, Relation.EQ, Relation.GT
 
 class ContradictionError(Exception):
     def __init__(self, k, was, claimed):
@@ -42,7 +55,7 @@ class PreorderedSet:
         if a == b:
             assert a in self.elements and b in self.elements
             return EQ
-        return self.relations[a, b] if a < b else invert_rel(self.relations[b, a])
+        return self.relations[a, b] if a < b else -self.relations[b, a]
 
     def extreme(self, n, among = None, bottom = False):
         rel = GT if bottom else LT
@@ -70,7 +83,7 @@ class PreorderedSet:
 
         k = (a, b)
         if b < a:
-           k, rel = (b, a), invert_rel(rel)
+           k, rel = (b, a), -rel
 
         if self.relations[k] == IC:
             self.relations[k] = rel

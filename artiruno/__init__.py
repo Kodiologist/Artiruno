@@ -17,5 +17,5 @@ if platform.python_implementation() == 'Brython':
 from artiruno._version import __version__
 from artiruno.util import *
 from artiruno.preorder import (
-    PreorderedSet, IC, EQ, LT, GT, ContradictionError)
+    PreorderedSet, Relation, IC, EQ, LT, GT, ContradictionError)
 from artiruno.vda import vda, avda
