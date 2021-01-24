@@ -1,3 +1,7 @@
+'''This module provides a simple terminal-based interactive interface
+to VDA. The session is initialized from the command line, and then
+the user's choices are read from standard input.'''
+
 import sys, json
 from tempfile import mktemp
 from artiruno.preorder import LT, EQ, GT
@@ -48,9 +52,17 @@ def apc(allowed_pairs):
         print("Allowed pairs now:", allowed_pairs[0])
 
 def main():
-    print('Artiruno', __version__)
+    import argparse
+    args = argparse.ArgumentParser(
+        prog = 'artiruno',
+        description = __doc__)
+    args.add_argument('--version', action = 'version',
+        version = 'Artiruno ' + __version__)
+    args.add_argument('filepath',
+        help = 'path to a JSON file describing the scenario')
+    args = args.parse_args()
 
-    with open(sys.argv[1]) as o:
+    with open(args.filepath) as o:
         scenario = json.load(o)
 
     alt_names = None
