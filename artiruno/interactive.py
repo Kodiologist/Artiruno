@@ -19,8 +19,9 @@ def interact(criterion_names, alts, alt_names, **kwargs):
             print(f'\n({k})' + (
                 ' <<< ' + alt_names[alts.index(item)]
                     if alt_names and item in alts else ''))
-            for name, value in zip(criterion_names, item):
-                print(f'- {name}: {value}')
+            for i, (name, value) in enumerate(zip(criterion_names, item)):
+                print(f'- {name}: {value}' +
+                    ('   <<< different' if a[i] != b[i] else ''))
         print('\n(e) The two options are equally preferable')
         print('(q) Abort')
 
