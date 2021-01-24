@@ -84,6 +84,12 @@ def main():
         alt_names[alts.index(a)] if alt_names else str(a)
         for a in prefs.maxes(alts)))
 
+    try:
+        import graphviz
+    except ModuleNotFoundError:
+        print('The Python module `graphviz` is not installed. '
+            'No graph for you.')
+        return
     (prefs.get_subset(alts)
         .graph(namer = (lambda a: alt_names[alts.index(a)])
             if alt_names else str)
