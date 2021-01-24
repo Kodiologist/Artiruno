@@ -43,7 +43,7 @@ async def avda(
 
     async def get_pref(a, b):
         add_items(criteria, prefs, [a, b])
-        if (rel := prefs.cmp(a, b)) is None:
+        if (rel := prefs.cmp(a, b)) == IC:
             rel = asker(a, b)
             if inspect.isawaitable(rel):
                 rel = await rel
