@@ -84,11 +84,11 @@ def main():
         description = __doc__)
     args.add_argument('--version', action = 'version',
         version = 'Artiruno ' + __version__)
-    args.add_argument('filepath',
+    args.add_argument('FILEPATH',
         help = 'path to a JSON file describing the scenario')
     args = args.parse_args()
 
-    with open(args.filepath) as o:
+    with open(args.FILEPATH) as o:
         scenario = json.load(o)
 
     interact_args, alts, namer = setup_interactive(scenario)
