@@ -71,8 +71,11 @@ def setup_interactive(scenario):
     return interact_args, alts, namer
 
 def results_text(scenario, prefs, alts, namer):
-    return 'Best: ' + ', '.join(namer(a)
-        for a in prefs.extreme(scenario['find_best'], alts))
+    return (
+        'Best: ' + ', '.join(namer(a)
+            for a in prefs.extreme(scenario['find_best'], alts))
+        if scenario.get('find_best') else
+        'Preferences: ' + prefs.get_subset(alts)._summary(namer))
 
 def main():
     import argparse

@@ -117,9 +117,10 @@ class PreorderedSet:
             for (a, b), r in self.relations.items()
             if {a, b}.issubset(elements)})
 
-    def _summary(self):
+    def _summary(self, namer = str):
         return " ".join(
-            "{}{}{}".format(a, {EQ: "=", LT: "<"}[rel], b)
+            "{}{}{}".format(
+                namer(a), {EQ: "=", LT: "<"}[rel], namer(b))
             for a, b, rel in sorted(
                 (b, a, LT) if rel == GT else (a, b, rel)
                 for (a, b), rel in self.relations.items()
