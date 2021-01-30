@@ -5,6 +5,7 @@ import browser.aio as aio
 import browser.html as H
 import javascript as JS
 from artiruno.vda import avda
+from artiruno.interactive import setup_interactive, results_text
 from artiruno.preorder import LT, GT, EQ
 
 document, window = browser.document, browser.window
@@ -46,27 +47,14 @@ async def _restart_decision_making():
         document['dm'].textContent = str(e)
         return
 
-    # Set up the alts.
-    alt_names = None
-    if alts := scenario.get('alts'):
-        if isinstance(alts, dict):
-            alt_names, alts = zip(*alts.items())
-        alts = tuple(tuple(a[c] for c in scenario['criteria'])
-            for a in alts)
+    interact_args, alts, namer = setup_interactive(scenario)
 
     # Begin VDA.
     try:
         vda_running = True
-        prefs = await interact(
-            criterion_names = list(scenario['criteria']),
-            criteria = list(scenario['criteria'].values()),
-            alt_names = alt_names,
-            alts = alts,
-            find_best = scenario.get('find_best'),
-            max_dev = 2 * len(scenario['criteria']))
-        document['dm'] <= H.P('Best: ' + ", ".join(
-            alt_names[alts.index(a)] if alt_names else str(a)
-            for a in prefs.maxes(alts)))
+        prefs = await interact(**interact_args)
+        document['dm'] <= H.P(
+            results_text(scenario, prefs, alts, namer))
     except Quit:
         signal('quit_done')
     finally:
