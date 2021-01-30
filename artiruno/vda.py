@@ -10,31 +10,24 @@ class Jump(Exception):
 class Abort(Exception): pass
 
 def vda(*args, **kwargs):
+    "A synchronous interface to :func:`avda`. Use this function unless you need to get the decision-maker's input asynchronously, with an asynchronous ``asker``. See :func:`avda` for documentation."
+
     import asyncio
     return asyncio.run(avda(*args, **kwargs))
 
 async def avda(
         criteria, alts = None, asker = None, find_best = None,
         max_dev = 2, allowed_pairs_callback = lambda x: None):
-    """
-- `criteria` is an iterable of iterables specifying the levels of
-  each criterion. Within a criterion, we assume that later levels are
-  better.
-- `alts` is a list of the alternatives, each represented as a tuple of
-  the criteria. If it's `None`, we use the entire item space.
-- `asker` should be a callable object f(a, b) that returns
-    GT (1) if a is better
-    LT (-1) if b is better
-    0 (EQ) if they're equally good
-- `find_best` can be set to an integer. If so, VDA will aim to
-  identify the top `find_best` items and stop there. Otherwise, we'll
-  try to compare all the alternatives.
-- `max_dev` sets the maximum number of criteria on which hypothetical
-  items can deviate from the reference item when asking the user to
-  make choices. It's summed across both items; e.g., `max_dev == 5`
-  allows 4 deviant criteria compared to 1 deviant criterion.
-- `allowed_pairs_callback` is called on `allowed_pairs` for each
-  iteration of the outermost loop."""
+    '''Conduct verbal decision analysis.
+
+    :param criteria: An iterable of iterables specifying the levels of each criterion. Levels can be any hashable object, but are typically strings. Within a criterion, we assume that later levels are better.
+    :param alts: An iterable of the alternatives; that is, the specific items that can be decided among. Each alternative is represented as an iterable of criterion levels, listed in the same order as the criteria. If ``alts`` is :data:`py:None`, we use the entire item space; that is, the set of all possible items.
+    :param asker: A callable object ``f(a, b)`` that returns a :class:`Relation` (other than :const:`IC <Relation.IC>`) for ``a`` and ``b``; greater elements represent greater preference. The ``asker`` may be asynchronous.
+    :param find_best: An integer. If set, Artiruno will aim to identify the top ``find_best`` items and stop there. Otherwise, Artiruno will try to compare all the alternatives.
+    :param max_dev: The maximum number of criteria on which hypothetical items can deviate from the reference item when asking the user to make choices. It's summed across both items; e.g., ``max_dev = 5`` allows 4 deviant criteria compared to 1 deviant criterion, or 3 compared to 2.
+    :param allowed_pairs_callback: Called on ``allowed_pairs`` for each iteration of the outermost loop.
+
+    :returns: A :class:`PreorderedSet`. Its elements will be a subset of the item space and a superset of ``alts``.'''
 
     criteria, alts, prefs = _setup(criteria, alts)
     assert 2 <= max_dev <= 2*len(criteria)
@@ -51,18 +44,18 @@ async def avda(
         return rel
 
     def dev_from_ref(dev_criteria, vector):
-        '''Return a vector in the item space that deviates from the
-        best possible item on the given criteria with the given
-        values.'''
+        # Return a vector in the item space that deviates from the
+        # best possible item on the given criteria with the given
+        # values.
         return tuple(
            vector[i] if i in dev_criteria else c[-1]
            for i, c in enumerate(criteria))
 
     def num_item(item):
-        '''Represent criterion values as integers. This prevents us
-        from behaving differently depending on the default sort order
-        of the criterion values. (We're still sensitive to the order
-        of criteria, though.)'''
+        # Represent criterion values as integers. This prevents us
+        # from behaving differently depending on the default sort
+        # order of the criterion values. (We're still sensitive to the
+        # order of criteria, though.)"
         return tuple(criteria[i].index(v) for i, v in enumerate(item))
 
     for allowed_pairs in (l[::-1] for l in accumulate(
@@ -132,8 +125,8 @@ async def avda(
     return prefs
 
 def _setup(criteria, alts = None, find_best = None):
-    '''Some initial VDA logic put into its own function so it can be
-    tested separately.'''
+    # Some initial VDA logic put into its own function so it can be
+    # tested separately.
 
     criteria = tuple(map(tuple, criteria))
     assert len(criteria)

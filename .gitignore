@@ -3,3 +3,4 @@ __pycache__/
 /artiruno.egg-info
 /build
 /dist
+/doc/_build

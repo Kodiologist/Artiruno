@@ -3,16 +3,19 @@ from collections import Counter
 from artiruno.util import cmp, choose2
 
 class Relation(enum.Enum):
-    # The types of relations: incomparable, less than, equivalent, greater than
-    IC = None
-    LT = -1
-    EQ = 0
-    GT = 1
+    'An :class:`enum.Enum` representing the order relation between two objects.'
+
+    IC = None  #: Incomparable (true relation not yet known)
+    LT = -1    #: Less than
+    EQ = 0     #: Equal or equivalent to
+    GT = 1     #: Greater than
 
     def __bool__(self):
+        ':const:`LT` and :const:`GT` are true. :const:`IC` and :const:`EQ` are false.'
         return bool(self.value)
 
     def __neg__(self):
+        'Swap :const:`LT` and :const:`GT`. Return :const:`IC` or :const:`EQ` unchanged.'
         return (
             LT if self == GT else
             GT if self == LT else
@@ -20,18 +23,22 @@ class Relation(enum.Enum):
 
     @classmethod
     def cmp(cls, a, b):
+        "Return the :class:`Relation` between ``a`` and ``b`` corresponding to Python's built-in comparison operators."
         return cls(cmp(a, b))
 
 IC, LT, EQ, GT = Relation.IC, Relation.LT, Relation.EQ, Relation.GT
 
 class ContradictionError(Exception):
+    'Represents an attempt to build an inconsistent order.'
     def __init__(self, k, was, claimed):
         super().__init__('{}: known to be {}, now claimed to be {}'.format(k, was, claimed))
 
 class PreorderedSet:
-    '''A set equipped with a preorder. Elements can be added to
-    the set, and the order can be updated to make previously
-    incomparable elements comparable.'''
+    '''A set equipped with a `preorder <https://en.wikipedia.org/wiki/Preorder>`_. Elements can be added to the set, and the order can be updated to make previously incomparable elements comparable.
+
+    :param elements: An iterable of hashable objects to be ordered.
+    :param relations: An iterable of triples ``(a, b, rel)``, where ``a`` and ``b`` are objects in ``elements``, and ``rel`` is a :class:`Relation`. By default, all elements are incomparable to each other.
+    :param raw_relations: Used internally.'''
 
     def __init__(self, elements = (), relations = (), raw_relations = None):
         self.elements = set(elements)
@@ -41,10 +48,12 @@ class PreorderedSet:
             self.learn(a, b, rel)
 
     def copy(self):
+        'Return a copy of the object.'
         return type(self)(self.elements.copy(),
             raw_relations = self.relations.copy())
 
     def add(self, x):
+        "Add ``x`` to the set; a no-op if it's already there. ``x`` is initially incomparable to all other elements."
         if x in self.elements:
             return
         for a in self.elements:
@@ -52,12 +61,22 @@ class PreorderedSet:
         self.elements.add(x)
 
     def cmp(self, a, b):
+        'Return the :class:`Relation` between ``a`` and ``b``.'
         if a == b:
             assert a in self.elements and b in self.elements
             return EQ
         return self.relations[a, b] if a < b else -self.relations[b, a]
 
     def extreme(self, n, among = None, bottom = False):
+        '''Return the top-``n`` subset (or bottom-``n`` subset, if ``bottom`` is true) of the items in the set ``among``, or of the whole set if ``among`` is not provided.
+
+        We define the *top-n subset* of a preordered set ``S`` to be the set of all elements ``x ∈ S`` such that
+
+        - ``x`` is comparable to all elements of ``S``, and
+        - there are at most ``n - 1`` distinct elements ``a ∈ S`` such that ``a > x``.
+
+        We define the bottom-``n`` subset similarly, with the inequality in the other direction. Notice that the top-``n`` subset may contain more or less than ``n`` items.'''
+
         rel = GT if bottom else LT
           # Work around https://github.com/brython-dev/brython/issues/1535
         return frozenset(x
@@ -67,12 +86,14 @@ class PreorderedSet:
             if cmps[IC] == 0 and cmps[rel] < n)
 
     def maxes(self, among = None):
+        'Return all the maxima among the items in ``among``, or the whole set if ``among`` is not provided. The maxima are defined as the top-1 subset, per :meth:`extreme`.'
         return self.extreme(1, among, bottom = False)
     def mins(self, among = None):
+        'As ``maxes``, but for minima.'
         return self.extreme(1, among, bottom = True)
 
     def _set(self, a, b, rel):
-        'Return true if a change was made.'
+        # Return true if a change was made.
         assert rel in (LT, EQ, GT)
 
         if a == b:
@@ -94,9 +115,12 @@ class PreorderedSet:
             raise ContradictionError(k, self.relations[k], rel)
 
     def learn(self, a, b, rel):
-        '''Update the ordering. Return a list of pairs that were updated.
-        Raise ContradictionError if the new assertion isn't consistent
-        with the preexisting non-IC relations.'''
+        '''Update the ordering such that ``a`` and ``b`` are related by ``rel``, a :class:`Relation` other than :const:`IC <Relation.IC>`. Any other relations that can be inferred by transitivity will be added to the set.
+
+        Return a list of pairs that were actually updated. If the relation between ``a`` and ``b`` was already known, the list will be empty. If we made inferences for other pairs, these pairs will be included in the list.
+
+        Raise :class:`ContradictionError` if the new relation isn't consistent with the preexisting relations (other than incomparability).'''
+
         if not self._set(a, b, rel):
             return []
         # Use a modification of Warshall's algorithm to update the transitive
@@ -111,6 +135,8 @@ class PreorderedSet:
         return changed
 
     def get_subset(self, elements):
+        'Return a new :class:`PreorderedSet` that contains only the requested ``elements``.'
+
         elements = frozenset(elements)
         assert elements.issubset(self.elements)
         return type(self)(elements, raw_relations = {(a, b): r
@@ -127,6 +153,8 @@ class PreorderedSet:
                 if rel != IC))
 
     def graph(self, namer = str):
+        'Return the set represented as a :class:`graphviz.Source` object. Requires the Python package ``graphviz``. ``namer`` should be a callback that returns a name for an element, as a string.'
+
         import subprocess
         import graphviz
 
