@@ -9,6 +9,7 @@ from artiruno.interactive import setup_interactive, results_text
 from artiruno.preorder import LT, GT, EQ
 
 document, window = browser.document, browser.window
+T = document.createTextNode
 
 vda_running = False
 
@@ -18,7 +19,7 @@ def initialize_web_interface():
     with open('examples/jobs.json', 'r') as o:
         document['problem-definition'].value = o.read().strip()
     (document['start-button-parent'] <=
-        H.BUTTON('Start decision-making', id = 'start-button'))
+        H.BUTTON(T('Start decision-making'), id = 'start-button'))
     document['start-button'].bind('click', restart_decision_making)
 
 def restart_decision_making(_):
@@ -53,8 +54,8 @@ async def _restart_decision_making():
     try:
         vda_running = True
         prefs = await interact(**interact_args)
-        document['dm'] <= H.P(
-            results_text(scenario, prefs, alts, namer))
+        document['dm'] <= H.P(T(
+            results_text(scenario, prefs, alts, namer)))
     except Quit:
         signal('quit_done')
     finally:
@@ -75,26 +76,26 @@ async def interact(criterion_names, alts, alt_names, **kwargs):
         buttons = {}
         def button(the_id, text):
             buttons[the_id] = lambda _: signal('choice', the_id)
-            return H.BUTTON(text, id = the_id)
+            return H.BUTTON(T(text), id = the_id)
 
         def display_item(item):
             # Display the item as a list with one criterion and value
             # per list item. Highlight the criteria value that differ
             # between the two options.
             return H.UL([
-                 H.LI([name + ': ',
-                     (value if a[i] == b[i] else H.STRONG(value))])
+                 H.LI([T(name + ': '),
+                     (T(value) if a[i] == b[i] else H.STRONG(T(value)))])
                  for i, (name, value)
                  in enumerate(zip(criterion_names, item))])
 
         document['dm'] <= H.DIV(
-            [H.P('Q{}: Which would you prefer?'.format(n_questions)), H.UL([
+            [H.P(T('Q{}: Which would you prefer?'.format(n_questions))), H.UL([
                 H.LI([button('option_a', 'Option A'),
                     display_item(a)]),
                 H.LI([button('option_b', 'Option B'),
                     display_item(b)]),
                 H.LI([button('equal', 'Equal'),
-                    'The two options are equally preferable'])])],
+                    T('The two options are equally preferable')])])],
             Class = 'query')
 
         for button, callback in buttons.items():
@@ -108,7 +109,7 @@ async def interact(criterion_names, alts, alt_names, **kwargs):
         # Replace the buttons with indicators of the user's decision.
         for button in buttons:
             document[button].replaceWith(H.SPAN(
-               'your choice' if button == choice else 'not chosen',
+               T('your choice' if button == choice else 'not chosen'),
                Class = 'chosen' if button == choice else 'not-chosen'))
 
         # Return the choice.
