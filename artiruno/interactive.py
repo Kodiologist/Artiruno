@@ -49,7 +49,7 @@ def interact(criterion_names, alts, alt_names, **kwargs):
 
 def apc(allowed_pairs):
     if len(allowed_pairs) > 1:
-        print("Allowed pairs now:", allowed_pairs[0])
+        print('Allowed pairs now:', allowed_pairs[0])
 
 def setup_interactive(scenario):
     alt_names = None

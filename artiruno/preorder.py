@@ -26,7 +26,7 @@ IC, LT, EQ, GT = Relation.IC, Relation.LT, Relation.EQ, Relation.GT
 
 class ContradictionError(Exception):
     def __init__(self, k, was, claimed):
-        super().__init__("{}: known to be {}, now claimed to be {}".format(k, was, claimed))
+        super().__init__('{}: known to be {}, now claimed to be {}'.format(k, was, claimed))
 
 class PreorderedSet:
     '''A set equipped with a preorder. Elements can be added to
@@ -118,9 +118,9 @@ class PreorderedSet:
             if {a, b}.issubset(elements)})
 
     def _summary(self, namer = str):
-        return " ".join(
-            "{}{}{}".format(
-                namer(a), {EQ: "=", LT: "<"}[rel], namer(b))
+        return ' '.join(
+            '{}{}{}'.format(
+                namer(a), {EQ: '=', LT: '<'}[rel], namer(b))
             for a, b, rel in sorted(
                 (b, a, LT) if rel == GT else (a, b, rel)
                 for (a, b), rel in self.relations.items()
@@ -144,7 +144,7 @@ class PreorderedSet:
 
         # Add the nodes to the graph.
         def node_repr(node):
-            return " / ".join(map(namer, sorted(node)))
+            return ' / '.join(map(namer, sorted(node)))
         for node in nodes:
             g.node(node_repr(node))
 
@@ -156,5 +156,5 @@ class PreorderedSet:
         # Render to Graphviz source code, transform to the transitive
         # reduction with `tred`, and redigest the graph.
         return graphviz.Source(subprocess
-            .Popen(["tred"], stdin = subprocess.PIPE, stdout = subprocess.PIPE)
+            .Popen(['tred'], stdin = subprocess.PIPE, stdout = subprocess.PIPE)
             .communicate(g.source.encode('UTF-8'))[0].decode('UTF-8'))
