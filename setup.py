@@ -13,7 +13,10 @@ setuptools.setup(
     description = 'Verbal decision analysis',
     long_description = long_description,
     long_description_content_type = 'text/x-rst',
-    url = 'https://github.com/Kodiologist/Artiruno',
+    url = 'https://arfer.net/projects/artiruno',
+    project_urls = {
+        "Documentation": 'https://arfer.net/projects/artiruno/doc',
+        "Source Code": 'https://github.com/Kodiologist/Artiruno'},
     packages = setuptools.find_packages(),
     classifiers = [
         'Programming Language :: Python :: 3',
