@@ -1,0 +1,25 @@
+name: Run tests
+
+on: [pull_request, push]
+
+jobs:
+  test:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python: [3.8, 3.9, '3.10']
+
+    name: ${{ matrix.python }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+    - run: pip install . && rm -r artiruno
+        # We want to be sure we're testing the installed version,
+        # instead of running from the source tree.
+    - run: pip install pytest
+    - run: pytest --slow
