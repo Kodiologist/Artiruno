@@ -9,39 +9,39 @@
     "Salary": ["Below average", "Average", "High"],
     "Location": ["Far", "Some distance", "Almost ideal"],
     "Type": ["Inappropriate", "Good enough", "Almost ideal"],
-    "Training possibilites": ["Almost none", "Normal", "Nice"],
-    "Promotion possibilites": ["Almost none", "Moderate", "Good"]},
+    "Training possibilities": ["Almost none", "Normal", "Nice"],
+    "Promotion possibilities": ["Almost none", "Moderate", "Good"]},
 
 "alts": {
     "Job A": {
         "Salary": "Below average",
         "Location": "Some distance",
         "Type": "Inappropriate",
-        "Training possibilites": "Nice",
-        "Promotion possibilites": "Moderate"},
+        "Training possibilities": "Nice",
+        "Promotion possibilities": "Moderate"},
     "Job B": {
         "Salary": "Average",
         "Location": "Far",
         "Type": "Inappropriate",
-        "Training possibilites": "Normal",
-        "Promotion possibilites": "Moderate"},
+        "Training possibilities": "Normal",
+        "Promotion possibilities": "Moderate"},
     "Job C": {
         "Salary": "Below average",
         "Location": "Some distance",
         "Type": "Good enough",
-        "Training possibilites": "Nice",
-        "Promotion possibilites": "Good"},
+        "Training possibilities": "Nice",
+        "Promotion possibilities": "Good"},
     "Job D": {
         "Salary": "Average",
         "Location": "Some distance",
         "Type": "Good enough",
-        "Training possibilites": "Nice",
-        "Promotion possibilites": "Moderate"},
+        "Training possibilities": "Nice",
+        "Promotion possibilities": "Moderate"},
     "Job E": {
         "Salary": "High",
         "Location": "Some distance",
         "Type": "Inappropriate",
-        "Training possibilites": "Nice",
-        "Promotion possibilites": "Good"}}
+        "Training possibilities": "Nice",
+        "Promotion possibilities": "Good"}}
 
 }
