@@ -55,7 +55,7 @@ async def avda(
         # Represent criterion values as integers. This prevents us
         # from behaving differently depending on the default sort
         # order of the criterion values. (We're still sensitive to the
-        # order of criteria, though.)"
+        # order of criteria, though.)
         return tuple(criteria[i].index(v) for i, v in enumerate(item))
 
     for allowed_pairs in (l[::-1] for l in accumulate(
