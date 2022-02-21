@@ -1,4 +1,5 @@
 from itertools import accumulate, combinations, product
+import re
 import inspect
 from artiruno.preorder import PreorderedSet, Relation, IC, LT, EQ, GT
 from artiruno.util import cmp, choose2
@@ -9,11 +10,7 @@ class Jump(Exception):
 
 class Abort(Exception): pass
 
-def vda(*args, **kwargs):
-    "A synchronous interface to :func:`avda`. Use this function unless you need to get the decision-maker's input asynchronously, with an asynchronous ``asker``. See :func:`avda` for documentation."
-
-    import asyncio
-    return asyncio.run(avda(*args, **kwargs))
+avda_doc = 'As :func:`vda`, but accepts an asynchronous ``asker``.'
 
 async def avda(
         criteria, alts = None, asker = None, find_best = None,
@@ -22,7 +19,7 @@ async def avda(
 
     :param criteria: An iterable of iterables specifying the levels of each criterion. Levels can be any hashable object, but are typically strings. Within a criterion, we assume that later levels are better.
     :param alts: An iterable of the alternatives; that is, the specific items that can be decided among. Each alternative is represented as an iterable of criterion levels, listed in the same order as the criteria. If ``alts`` is :data:`py:None`, we use the entire item space; that is, the set of all possible items.
-    :param asker: A callable object ``f(a, b)`` that returns a :class:`Relation` (other than :const:`IC <Relation.IC>`) for ``a`` and ``b``; greater elements represent greater preference. The ``asker`` may be asynchronous.
+    :param asker: A callable object ``f(a, b)`` that returns a :class:`Relation` (other than :const:`IC <Relation.IC>`) for ``a`` and ``b``; greater elements represent greater preference. Use :func:`vda` if the asker is synchronous and :func:`avda` if it's asynchronous.
     :param find_best: An integer. If set, Artiruno will aim to identify the top ``find_best`` items and stop there. Otherwise, Artiruno will try to compare all the alternatives.
     :param max_dev: The maximum number of criteria on which hypothetical items can deviate from the reference item when asking the user to make choices. It's summed across both items; e.g., ``max_dev = 5`` allows 4 deviant criteria compared to 1 deviant criterion, or 3 compared to 2.
     :param allowed_pairs_callback: Called on ``allowed_pairs`` for each iteration of the outermost loop.
@@ -37,9 +34,7 @@ async def avda(
     async def get_pref(a, b):
         add_items(criteria, prefs, [a, b])
         if (rel := prefs.cmp(a, b)) == IC:
-            rel = asker(a, b)
-            if inspect.isawaitable(rel):
-                rel = await rel
+            rel = await asker(a, b)
             prefs.learn(a, b, rel)
         return rel
 
@@ -123,6 +118,14 @@ async def avda(
                 return prefs
 
     return prefs
+
+# Define `vda` as a a synchronous version of `avda`.
+exec(
+  re.sub(r'\basync ', '',
+  re.sub(r'\bawait ', '',
+  re.sub('def avda', 'def vda',
+  ''.join(inspect.getsourcelines(avda)[0])))))
+avda.__doc__ = avda_doc
 
 def _setup(criteria, alts = None, find_best = None):
     # Some initial VDA logic put into its own function so it can be
