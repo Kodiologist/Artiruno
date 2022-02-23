@@ -86,13 +86,11 @@ class PreorderedSet:
 
         We define the bottom-``n`` subset similarly, with the inequality in the other direction. Notice that the top-``n`` subset may contain more or less than ``n`` items.'''
 
-        rel = GT if bottom else LT
-          # Work around https://github.com/brython-dev/brython/issues/1535
         return frozenset(x
             for x in among or self.elements
             for cmps in [Counter(
                 self.cmp(x, a) for a in among or self.elements)]
-            if cmps[IC] == 0 and cmps[rel] < n)
+            if cmps[IC] == 0 and cmps[GT if bottom else LT] < n)
 
     def maxes(self, among = None):
         'Return all the maxima among the items in ``among``, or the whole set if ``among`` is not provided. The maxima are defined as the top-1 subset, per :meth:`extreme`.'
