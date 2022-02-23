@@ -143,7 +143,8 @@ class PreorderedSet:
             for (a, b), r in self.relations.items()
             if {a, b}.issubset(elements)})
 
-    def _summary(self, namer = str):
+    def summary(self, namer = str):
+        'Describe all the relations with a string like "A<B C<D E=F". ``namer`` should be a callback that returns a name for an element, as a string.'
         return ' '.join(
             '{}{}{}'.format(
                 namer(a), {EQ: '=', LT: '<'}[rel], namer(b))

@@ -75,7 +75,7 @@ def results_text(scenario, prefs, alts, namer):
         'Best: ' + ', '.join(namer(a)
             for a in prefs.extreme(scenario['find_best'], alts))
         if scenario.get('find_best') else
-        'Preferences: ' + prefs.get_subset(alts)._summary(namer))
+        'Preferences: ' + prefs.get_subset(alts).summary(namer))
 
 def main():
     import argparse
