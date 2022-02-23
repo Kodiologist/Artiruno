@@ -68,6 +68,8 @@ def test_complex():
     y.learn("b", "y", EQ)
     assert y._summary() == "a<b a<c a<w a<y a<z b<c b=w b=y b<z w<c w=y w<z x<b x<c x<w x<y x<z y<c y<z"
 
+    return x  # For `graph_example`.
+
 def test_big():
     x = PreorderedSet(range(25))
     for a, b, r in [[6, 16, EQ], [16, 5, LT], [21, 11, EQ], [8, 10, EQ], [11, 20, LT], [8, 3, EQ], [1, 18, EQ], [2, 3, GT], [0, 2, LT], [12, 23, EQ], [1, 20, EQ], [23, 1, GT], [16, 13, LT], [14, 6, EQ], [1, 22, GT], [13, 2, GT], [24, 5, LT], [16, 3, EQ], [7, 16, EQ], [19, 16, EQ], [4, 17, LT], [4, 0, GT], [3, 7, EQ], [15, 16, EQ]]:
