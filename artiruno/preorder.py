@@ -10,6 +10,12 @@ class Relation(enum.Enum):
     EQ = 0     #: Equal or equivalent to
     GT = 1     #: Greater than
 
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
+
     def __bool__(self):
         ':const:`LT` and :const:`GT` are true. :const:`IC` and :const:`EQ` are false.'
         return bool(self.value)
@@ -46,6 +52,9 @@ class PreorderedSet:
             for a, b in choose2(sorted(self.elements))}
         for a, b, rel in relations:
             self.learn(a, b, rel)
+
+    def __repr__(self):
+        return f'PreorderedSet({self.elements!r}, {self.relations!r})'
 
     def copy(self):
         'Return a copy of the object.'
