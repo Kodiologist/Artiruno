@@ -1,4 +1,4 @@
-import random, itertools, inspect, asyncio
+import random, itertools, inspect, asyncio, platform
 from collections import Counter
 import artiruno
 from artiruno import Relation, IC, LT, EQ, GT, vda, avda, cmp, choose2
@@ -92,6 +92,8 @@ def test_simple_strings():
             for (ai, a), (bi, b) in choose2(enumerate(ranking)):
                 assert prefs.cmp(a, b) == Relation.cmp(ai, bi)
 
+@pytest.mark.skipif(platform.system() == 'Emscripten',
+    reason = 'https://github.com/pyodide/pyodide/issues/2221')
 def test_async():
     criteria = ((0, 1), (0, 1))
     alts = ((0, 1), (1, 0))
