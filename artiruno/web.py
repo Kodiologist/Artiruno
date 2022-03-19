@@ -6,11 +6,56 @@ from artiruno.vda import avda
 from artiruno.interactive import setup_interactive, results_text
 from artiruno.preorder import LT, GT, EQ
 
-T = js.document.createTextNode
+# ------------------------------------------------------------
+# * Global state
+# ------------------------------------------------------------
 
 vda_running = False
+n_questions = 0
+
+# ------------------------------------------------------------
+# * Helpers
+# ------------------------------------------------------------
 
 class Quit(Exception): pass
+
+T = js.document.createTextNode
+
+signals = dict(
+    choice = asyncio.Event(),
+    quit_done = asyncio.Event())
+
+def signal(event_type, value = True):
+    signals[event_type].value = value
+    signals[event_type].set()
+
+async def get_signal(event_type):
+    await signals[event_type].wait()
+    signals[event_type].clear()
+    value = signals[event_type].value
+    signals[event_type].value = None
+    return value
+
+def E(id_str):
+    return js.document.getElementById(id_str)
+
+class H:
+    'Create an HTML element, set attributes, and add children.'
+    def __getattr__(self, element_name):
+        def f(*children, **attrs):
+            x = js.document.createElement(element_name)
+            for c in children:
+                x.appendChild(c)
+            for k, v in attrs.items():
+                x.setAttribute(k.lower(), v)
+            return x
+        setattr(H, element_name, f)
+        return f
+H = H()
+
+# ------------------------------------------------------------
+# * Main functions
+# ------------------------------------------------------------
 
 def initialize_web_interface():
     with open('examples/jobs.json', 'r') as o:
@@ -56,8 +101,6 @@ async def _restart_decision_making():
         signal('quit_done')
     finally:
         vda_running = False
-
-n_questions = 0
 
 async def interact(criterion_names, alts, alt_names, **kwargs):
     global n_questions
@@ -119,35 +162,3 @@ async def interact(criterion_names, alts, alt_names, **kwargs):
         asker = asker,
         alts = alts,
         **kwargs)
-
-signals = dict(
-    choice = asyncio.Event(),
-    quit_done = asyncio.Event())
-
-def signal(event_type, value = True):
-    signals[event_type].value = value
-    signals[event_type].set()
-
-async def get_signal(event_type):
-    await signals[event_type].wait()
-    signals[event_type].clear()
-    value = signals[event_type].value
-    signals[event_type].value = None
-    return value
-
-def E(id_str):
-    return js.document.getElementById(id_str)
-
-class H:
-    'Create an HTML element, set attributes, and add children.'
-    def __getattr__(self, element_name):
-        def f(*children, **attrs):
-            x = js.document.createElement(element_name)
-            for c in children:
-                x.appendChild(c)
-            for k, v in attrs.items():
-                x.setAttribute(k.lower(), v)
-            return x
-        setattr(H, element_name, f)
-        return f
-H = H()
