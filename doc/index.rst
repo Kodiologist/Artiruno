@@ -19,7 +19,7 @@ Artiruno has a `web interface <http://arfer.net/projects/artiruno/webi>`_ and a 
 
 Artiruno input files are formatted in `JSON <https://www.json.org>`_. See the ``examples`` directory of the source code for examples, and :func:`artiruno.avda` below for a description of the arguments.
 
-Artiruno has an automated test suite that uses pytest. To run it, just use the command ``pytest``. By default, particularly slow tests are skipped. Say ``pytest --slow`` to run all the tests.
+Artiruno has an automated test suite that uses pytest. To run it, just use the command ``pytest``. To run it on a web browser with Pyodide, use the script ``pyodide_testing.py``. By default, regardless of platform, particularly slow tests are skipped; say ``pytest --slow`` to run all the tests.
 
 The documentation uses Sphinx. To build it, say ``sphinx-build -b singlehtml doc/ doc/_build/``.
 
