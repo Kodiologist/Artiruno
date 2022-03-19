@@ -3,7 +3,7 @@
 # N.B. `--slow` on Firefox takes about 15 minutes on my fairly beefy
 # laptop, vs. less than a tenth of that with native CPython.
 
-import sys, tempfile, shutil, re
+import sys, tempfile, subprocess, re
 from pathlib import Path
 
 pyodide_version = re.search('pyodide/(v[^/]+)',
@@ -11,7 +11,11 @@ pyodide_version = re.search('pyodide/(v[^/]+)',
 
 td = Path('/tmp/artiruno_pyodide_testing_SNtl1aBcvhoD5PO8upr4')
 td.mkdir(exist_ok = True)
-shutil.make_archive(str(td / 'artiruno'), 'tar')
+subprocess.check_call(['tar',
+    '--create', '--auto-compress',
+    '--file', td / 'artiruno_for_pyodide.tar.gz',
+    '--exclude', '__pycache__',
+    *'artiruno conftest.py examples pytest.ini tests setup.py'.split()])
 
 page = '''
     <!DOCTYPE html>
@@ -30,7 +34,7 @@ page = '''
             import micropip
             await micropip.install('pytest-asyncio')
             from pyodide.http import pyfetch
-            await (await pyfetch('artiruno.tar')).unpack_archive()`)
+            await (await pyfetch('artiruno_for_pyodide.tar.gz')).unpack_archive()`)
         console.log('pytest exit code: ', pyodide.runPython(`
             import pytest
             pytest.main(['-s', '--verbose', '--color=no', *ARGS])`))}

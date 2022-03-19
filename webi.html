@@ -70,7 +70,7 @@ async function main()
        {indexURL: "https://cdn.jsdelivr.net/pyodide/v0.19.1/full/"})
    await pyodide.runPythonAsync(`
         from pyodide.http import pyfetch
-        await (await pyfetch('artiruno.tar')).unpack_archive()
+        await (await pyfetch('artiruno_for_pyodide.tar.gz')).unpack_archive()
         import artiruno, js
         artiruno.initialize_web_interface()
         js.document.getElementById('loading-message').remove()`)}
