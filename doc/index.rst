@@ -21,7 +21,7 @@ Artiruno input files are formatted in `JSON <https://www.json.org>`_. See the ``
 
 Artiruno has an automated test suite that uses pytest. To run it, install the PyPI packages ``pytest`` and ``pytest-asyncio`` and then use the command ``pytest``. To run it on a web browser with Pyodide, use the script ``pyodide_testing.py``. By default, regardless of platform, particularly slow tests are skipped; say ``pytest --slow`` to run all the tests.
 
-The documentation uses Sphinx. To build it, say ``sphinx-build -b singlehtml doc/ doc/_build/``.
+The documentation uses Sphinx. To build it, say ``sphinx-build -b html doc/ doc/_build/``.
 
 How it works
 ============================================================
