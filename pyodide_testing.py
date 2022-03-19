@@ -22,7 +22,13 @@ page = '''
        {let pyodide = await loadPyodide(
            {indexURL: "https://cdn.jsdelivr.net/pyodide/PYV/full/"})
         await pyodide.loadPackage('pytest')
+        await pyodide.loadPackage('micropip')
         await pyodide.runPythonAsync(`
+            import pyodide
+            pyodide.webloop.WebLoop.close = lambda *a, **kw: True
+              # Work around https://github.com/pyodide/pyodide/issues/2221
+            import micropip
+            await micropip.install('pytest-asyncio')
             from pyodide.http import pyfetch
             await (await pyfetch('artiruno.tar')).unpack_archive()`)
         console.log('pytest exit code: ', pyodide.runPython(`
