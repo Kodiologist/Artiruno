@@ -6,8 +6,7 @@
 <meta charset="UTF-8">
 
 <!-- SCRIPSTY -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.9.0/brython.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.9.0/brython_stdlib.js"></script>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.19.1/full/pyodide.js"></script>
 <style type="text/css">
 
 #loading-message
@@ -36,10 +35,11 @@
 
 </head>
 
-<body onload="brython({cache: true})">
+<body>
 
-<p>This interface is implemented in JavaScript
-with <a href="https://brython.info">Brython</a>
+<p>This interface is implemented in
+<a href="https://pyodide.org">Pyodide</a>,
+a <a href="https://webassembly.org">WebAssembly</a>-based Python interpreter,
 and can be particularly slow on phones and tablets.
 Try using a PC or Artiruno's command-line interface
 (available through
@@ -63,21 +63,18 @@ for better performance.</p>
 
 </div>
 
-<script type="text/python">
-import browser, browser.aio
-browser.document['loading-message'].textContent = 'Loading…'
-# The below code is wrapped in an asynchornous function and begins
-# with sleep(0) so that the loading message is drawn before it runs.
-async def f():
-    await browser.aio.sleep(0)
-    try:
-        import artiruno
+<script>
+document.getElementById('loading-message').textContent = 'Loading…'
+async function main()
+  {let pyodide = await loadPyodide(
+       {indexURL: "https://cdn.jsdelivr.net/pyodide/v0.19.1/full/"})
+   await pyodide.runPythonAsync(`
+        from pyodide.http import pyfetch
+        await (await pyfetch('artiruno.tar')).unpack_archive()
+        import artiruno, js
         artiruno.initialize_web_interface()
-    except Exception as e:
-        browser.document['dm'].textContent = repr(e)
-    finally:
-        browser.document['loading-message'].remove()
-browser.aio.run(f())
+        js.document.getElementById('loading-message').remove()`)}
+main()
 </script>
 
 </body></html>

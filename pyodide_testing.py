@@ -3,22 +3,24 @@
 # N.B. `--slow` on Firefox takes about 15 minutes on my fairly beefy
 # laptop, vs. less than a tenth of that with native CPython.
 
-import sys, tempfile, shutil, pathlib
+import sys, tempfile, shutil, re
+from pathlib import Path
 
-pyodide_version = '0.19.1'
+pyodide_version = re.search('pyodide/(v[^/]+)',
+    Path('webi.html').read_text()).group(1)
 
-td = pathlib.Path('/tmp/artiruno_pyodide_testing_SNtl1aBcvhoD5PO8upr4')
+td = Path('/tmp/artiruno_pyodide_testing_SNtl1aBcvhoD5PO8upr4')
 td.mkdir(exist_ok = True)
 shutil.make_archive(str(td / 'artiruno'), 'tar')
 
 page = '''
     <!DOCTYPE html>
-    <script src="https://cdn.jsdelivr.net/pyodide/vPYV/full/pyodide.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/PYV/full/pyodide.js"></script>
     <title>Artiruno Pyodide testing</title>
     <script>
     async function main()
        {let pyodide = await loadPyodide(
-           {indexURL: "https://cdn.jsdelivr.net/pyodide/vPYV/full/"})
+           {indexURL: "https://cdn.jsdelivr.net/pyodide/PYV/full/"})
         await pyodide.loadPackage('pytest')
         await pyodide.runPythonAsync(`
             from pyodide.http import pyfetch

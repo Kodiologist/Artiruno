@@ -7,10 +7,10 @@ m = C()
 for s in ('util', 'preorder', 'vda', 'interactive'):
     setattr(m, s, getattr(artiruno, s))
 
-# Only import `artiruno.web` on Brython, since its own imports will
+# Only import `artiruno.web` on Pyodide, since its own imports will
 # fail on CPython.
 import platform
-if platform.python_implementation() == 'Brython':
+if platform.system() == 'Emscripten':
    from artiruno.web import initialize_web_interface
 
 # Now do the ordinary imports.
