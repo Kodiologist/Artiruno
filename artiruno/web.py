@@ -1,6 +1,6 @@
 # This module is only run by Pyodide.
 
-import asyncio, json
+import asyncio
 import js, pyodide
 from artiruno.vda import avda
 from artiruno.interactive import setup_interactive, results_text
@@ -57,23 +57,37 @@ H = H()
 # * Main functions
 # ------------------------------------------------------------
 
-def initialize_web_interface():
-    with open('examples/jobs.json', 'r') as o:
-        E('problem-definition').value = o.read().strip()
+def initialize_web_interface(mode, criteria = None, alts = None):
+    assert mode in ('demo', 'task')
+    if mode == 'demo':
+        with open('examples/jobs.json', 'r') as o:
+            E('problem-definition').value = o.read().strip()
+        scenario = None
+    else:
+        criteria = dict(criteria.to_py())
+        scenario = dict(
+            find_best = 1,
+            criteria = criteria,
+            alts = {
+                aname: dict(zip(criteria.keys(), avals))
+                for aname, avals in alts.to_py()})
     E('start-button-parent').appendChild(
         H.BUTTON(T('Start decision-making'), id = 'start-button'))
     E('start-button').addEventListener('click',
         pyodide.create_proxy(lambda _:
-            asyncio.ensure_future(restart_decision_making())))
+            asyncio.ensure_future(restart_decision_making(scenario))))
 
-async def restart_decision_making():
+async def restart_decision_making(scenario):
     try:
-       await _restart_decision_making()
+        if not scenario:
+            import json
+            scenario = json.loads(E('problem-definition').value)
+        await _restart_decision_making(scenario)
     except Exception as e:
         E('dm').textContent = repr(e)
         return
 
-async def _restart_decision_making():
+async def _restart_decision_making(scenario):
     global vda_running
 
     # Terminate any current VDA and clear the log.
@@ -87,8 +101,6 @@ async def _restart_decision_making():
     # Reword "start" to "restart".
     E('start-button').textContent = 'Restart decision making'
 
-    # Parse the problem definition.
-    scenario = json.loads(E('problem-definition').value)
     interact_args, alts, namer = setup_interactive(scenario)
 
     # Begin VDA.

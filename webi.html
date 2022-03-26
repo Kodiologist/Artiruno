@@ -62,8 +62,8 @@ for better performance.</p>
 
 </div>
 
-<script>
-async function main()
+<script id='defs'>
+async function load_vda(callback)
    {document.getElementById('loading-message').textContent = 'Loading…'
     try
        {let pyodide = await loadPyodide(
@@ -71,12 +71,16 @@ async function main()
         await pyodide.runPythonAsync(`
             from pyodide.http import pyfetch
             await (await pyfetch('artiruno_for_pyodide.tar.gz')).unpack_archive()
-            import artiruno, js
-            artiruno.initialize_web_interface()
-            js.document.getElementById('loading-message').remove()`)}
+            import artiruno`)
+        callback(pyodide)
+        document.getElementById('loading-message').remove()}
     catch (error)
        {document.getElementById('loading-message').textContent = error.toString()}}
-main()
+</script>
+
+<script>
+load_vda(function(pyodide)
+   {pyodide.runPython('artiruno.initialize_web_interface("demo")')})
 </script>
 
 </body></html>
