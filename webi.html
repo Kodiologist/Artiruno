@@ -10,8 +10,7 @@
 <style type="text/css">
 
 #loading-message
-   {font-style: italic;
-    padding: 1em;
+   {padding: 1em;
     background: #ccf;
     color: black;}
 
@@ -46,7 +45,7 @@ Try using a PC or Artiruno's command-line interface
 <a href="https://github.com/Kodiologist/Artiruno">the Python package</a>)
 for better performance.</p>
 
-<p id="loading-message"></p>
+<pre id="loading-message"></pre>
 
 <div>
 <label>Problem definition
@@ -64,16 +63,19 @@ for better performance.</p>
 </div>
 
 <script>
-document.getElementById('loading-message').textContent = 'Loading…'
 async function main()
-  {let pyodide = await loadPyodide(
-       {indexURL: "https://cdn.jsdelivr.net/pyodide/v0.19.1/full/"})
-   await pyodide.runPythonAsync(`
-        from pyodide.http import pyfetch
-        await (await pyfetch('artiruno_for_pyodide.tar.gz')).unpack_archive()
-        import artiruno, js
-        artiruno.initialize_web_interface()
-        js.document.getElementById('loading-message').remove()`)}
+   {document.getElementById('loading-message').textContent = 'Loading…'
+    try
+       {let pyodide = await loadPyodide(
+           {indexURL: "https://cdn.jsdelivr.net/pyodide/v0.19.1/full/"})
+        await pyodide.runPythonAsync(`
+            from pyodide.http import pyfetch
+            await (await pyfetch('artiruno_for_pyodide.tar.gz')).unpack_archive()
+            import artiruno, js
+            artiruno.initialize_web_interface()
+            js.document.getElementById('loading-message').remove()`)}
+    catch (error)
+       {document.getElementById('loading-message').textContent = error.toString()}}
 main()
 </script>
 
