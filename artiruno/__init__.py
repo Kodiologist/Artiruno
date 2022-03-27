@@ -11,7 +11,7 @@ for s in ('util', 'preorder', 'vda', 'interactive'):
 # fail on CPython.
 import platform
 if platform.system() == 'Emscripten':
-   from artiruno.web import initialize_web_interface
+   from artiruno.web import initialize_web_interface, stop_web_vda
 
 # Now do the ordinary imports.
 from artiruno._version import __version__

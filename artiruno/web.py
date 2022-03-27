@@ -10,6 +10,8 @@ from artiruno.preorder import LT, GT, EQ
 # * Global state
 # ------------------------------------------------------------
 
+initialized = False
+task_scenario = None
 vda_running = False
 n_questions = 0
 
@@ -58,24 +60,27 @@ H = H()
 # ------------------------------------------------------------
 
 def initialize_web_interface(mode, criteria = None, alts = None):
+    global task_scenario, initialized
     assert mode in ('demo', 'task')
     if mode == 'demo':
         with open('examples/jobs.json', 'r') as o:
             E('problem-definition').value = o.read().strip()
-        scenario = None
+        task_scenario = None
     else:
         criteria = dict(criteria.to_py())
-        scenario = dict(
+        task_scenario = dict(
             find_best = 1,
             criteria = criteria,
             alts = {
                 aname: dict(zip(criteria.keys(), avals))
                 for aname, avals in alts.to_py()})
-    E('start-button-parent').appendChild(
-        H.BUTTON(T('Start decision-making'), id = 'start-button'))
-    E('start-button').addEventListener('click',
-        pyodide.create_proxy(lambda _:
-            asyncio.ensure_future(restart_decision_making(scenario))))
+    if not initialized:
+        E('start-button-parent').appendChild(
+            H.BUTTON(T('Start decision-making'), id = 'start-button'))
+        E('start-button').addEventListener('click',
+            pyodide.create_proxy(lambda _:
+                asyncio.ensure_future(restart_decision_making(task_scenario))))
+        initialized = True
 
 async def restart_decision_making(scenario):
     try:
@@ -91,13 +96,7 @@ async def restart_decision_making(scenario):
 async def _restart_decision_making(scenario):
     global vda_running
 
-    # Terminate any current VDA and clear the log.
-    if vda_running:
-        # Kill the current VDA job.
-        signal('choice', 'quit')
-        # Wait till it's dead before continuing.
-        await get_signal('quit_done')
-    E('dm').textContent = ''
+    await stop_web_vda()
 
     # Reword "start" to "restart".
     E('start-button').textContent = 'Restart decision making'
@@ -175,3 +174,12 @@ async def interact(criterion_names, alts, alt_names, **kwargs):
         asker = asker,
         alts = alts,
         **kwargs)
+
+async def stop_web_vda():
+    # Terminate any current VDA and clear the log.
+    if vda_running:
+        # Kill the current VDA job.
+        signal('choice', 'quit')
+        # Wait till it's dead before continuing.
+        await get_signal('quit_done')
+    E('dm').textContent = ''
