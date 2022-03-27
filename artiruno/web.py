@@ -99,7 +99,7 @@ async def _restart_decision_making(scenario):
     await stop_web_vda()
 
     # Reword "start" to "restart".
-    E('start-button').textContent = 'Restart decision making'
+    E('start-button').textContent = 'Restart decision-making'
 
     interact_args, alts, namer = setup_interactive(scenario)
 
