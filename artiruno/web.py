@@ -108,7 +108,7 @@ async def _restart_decision_making(scenario):
         vda_running = True
         prefs = await interact(**interact_args)
         E('dm').appendChild(H.P(T(
-            results_text(scenario, prefs, alts, namer))))
+            results_text(scenario, prefs, alts, n_questions, namer))))
     except Quit:
         signal('quit_done')
     finally:

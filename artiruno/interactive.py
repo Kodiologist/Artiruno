@@ -8,8 +8,12 @@ from artiruno.vda import vda, Abort
 from artiruno._version import __version__
 
 def interact(criterion_names, alts, alt_names, **kwargs):
+    n_questions = 0
 
     def asker(a, b):
+        nonlocal n_questions
+
+        n_questions += 1
         print('\nWhich do you prefer?')
 
         options = dict(a = GT, b = LT, e = EQ, q = Abort)
@@ -41,11 +45,12 @@ def interact(criterion_names, alts, alt_names, **kwargs):
                 raise Abort()
             return v
 
-    return vda(
+    prefs = vda(
         asker = asker,
         alts = alts,
         allowed_pairs_callback = apc,
         **kwargs)
+    return prefs, n_questions
 
 def apc(allowed_pairs):
     if len(allowed_pairs) > 1:
@@ -70,12 +75,24 @@ def setup_interactive(scenario):
         max_dev = 2 * len(scenario['criteria']))
     return interact_args, alts, namer
 
-def results_text(scenario, prefs, alts, namer):
-    return (
-        'Best: ' + ', '.join(namer(a)
-            for a in prefs.extreme(scenario['find_best'], alts))
-        if scenario.get('find_best') else
-        'Preferences: ' + prefs.get_subset(alts).summary(namer))
+def results_text(scenario, prefs, alts, n_questions, namer):
+    # We provide more detailed text for the special case of
+    # `find_best = 1`.
+    if scenario.get('find_best'):
+        best = prefs.extreme(scenario['find_best'], alts)
+        return (
+            'Best: ' + ', '.join(map(namer, best))
+                if scenario['find_best'] > 1 else
+            "This program couldn't identify the best alternative."
+                if not best else
+            'Your definitions of the criteria and alternatives imply a single best alternative: ' + namer(next(iter(best)))
+                if len(best) == 1 and n_questions == 0 else
+            'Your choices imply a single best alternative: ' + namer(next(iter(best)))
+                if len(best) == 1 else
+            'Your choices imply that all alternatives are tied for the best.'
+                if alts and len(best) == len(alts) else
+            'Your choices imply that these alternatives are tied for the best: ' + ', '.join(sorted(map(namer, best))))
+    return 'Preferences: ' + prefs.get_subset(alts).summary(namer)
 
 def main():
     import argparse
@@ -92,8 +109,8 @@ def main():
         scenario = json.load(o)
 
     interact_args, alts, namer = setup_interactive(scenario)
-    prefs = interact(**interact_args)
-    print(results_text(scenario, prefs, alts, namer))
+    prefs, n_questions = interact(**interact_args)
+    print(results_text(scenario, prefs, alts, n_questions, namer))
 
     try:
         import graphviz
