@@ -59,7 +59,8 @@ H = H()
 # ------------------------------------------------------------
 
 def initialize_web_interface(mode,
-        criteria = None, alts = None, epoch = None):
+        criteria = None, alts = None, epoch = None,
+        vda_done_callback = None):
     global task_scenario, initialized
     assert mode in ('demo', 'task')
     if mode == 'demo':
@@ -74,7 +75,8 @@ def initialize_web_interface(mode,
             alts = {
                 aname: dict(zip(criteria.keys(), avals))
                 for aname, avals in alts.to_py()},
-            epoch = epoch)
+            epoch = epoch,
+            vda_done_callback = vda_done_callback)
     if not initialized:
         E('start-button-parent').appendChild(
             H.BUTTON(T('Start decision-making'), id = 'start-button'))
@@ -110,8 +112,10 @@ async def _restart_decision_making(scenario):
         vda_running = True
         prefs, questions = await interact(**interact_args,
             epoch = scenario['epoch'])
-        E('dm').appendChild(H.P(T(
-            results_text(scenario, prefs, alts, len(questions), namer))))
+        result = results_text(scenario, prefs, alts, len(questions), namer)
+        E('dm').appendChild(H.P(T(result)))
+        if 'vda_done_callback' in scenario:
+            scenario['vda_done_callback'](questions, result)
     except Quit:
         signal('quit_done')
     finally:
