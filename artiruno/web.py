@@ -13,7 +13,6 @@ from artiruno.preorder import LT, GT, EQ
 initialized = False
 task_scenario = None
 vda_running = False
-n_questions = 0
 
 # ------------------------------------------------------------
 # * Helpers
@@ -59,7 +58,8 @@ H = H()
 # * Main functions
 # ------------------------------------------------------------
 
-def initialize_web_interface(mode, criteria = None, alts = None):
+def initialize_web_interface(mode,
+        criteria = None, alts = None, epoch = None):
     global task_scenario, initialized
     assert mode in ('demo', 'task')
     if mode == 'demo':
@@ -73,7 +73,8 @@ def initialize_web_interface(mode, criteria = None, alts = None):
             criteria = criteria,
             alts = {
                 aname: dict(zip(criteria.keys(), avals))
-                for aname, avals in alts.to_py()})
+                for aname, avals in alts.to_py()},
+            epoch = epoch)
     if not initialized:
         E('start-button-parent').appendChild(
             H.BUTTON(T('Start decision-making'), id = 'start-button'))
@@ -88,6 +89,7 @@ async def restart_decision_making(scenario):
         if not scenario:
             import json
             scenario = json.loads(E('problem-definition').value)
+            scenario['epoch'] = js.performance.now()
         await _restart_decision_making(scenario)
     except Exception:
         E('dm-error-message').textContent = traceback.format_exc()
@@ -106,23 +108,21 @@ async def _restart_decision_making(scenario):
     # Begin VDA.
     try:
         vda_running = True
-        prefs = await interact(**interact_args)
+        prefs, questions = await interact(**interact_args,
+            epoch = scenario['epoch'])
         E('dm').appendChild(H.P(T(
-            results_text(scenario, prefs, alts, n_questions, namer))))
+            results_text(scenario, prefs, alts, len(questions), namer))))
     except Quit:
         signal('quit_done')
     finally:
         vda_running = False
 
-async def interact(criterion_names, alts, alt_names, **kwargs):
-    global n_questions
-    n_questions = 0
+async def interact(criterion_names, epoch, **kwargs):
+    kwargs.pop('alt_names', None)
+    questions = []
 
     async def asker(a, b):
         # Present the choices as a list with buttons.
-
-        global n_questions
-        n_questions += 1
 
         buttons = {}
         def button(the_id, text):
@@ -142,7 +142,8 @@ async def interact(criterion_names, alts, alt_names, **kwargs):
                 in enumerate(zip(criterion_names, item))))
 
         E('dm').appendChild(H.DIV(
-            H.P(T('Q{}: Which would you prefer?'.format(n_questions))),
+            H.P(T('Q{}: Which would you prefer?'.format(
+                len(questions) + 1))),
             H.UL(
                 H.LI(button('option_a', 'Option A'),
                     display_item(a)),
@@ -157,6 +158,9 @@ async def interact(criterion_names, alts, alt_names, **kwargs):
 
         # Wait for the user to click a button.
         choice = await get_signal('choice')
+        questions.append(dict(
+            a = a, b = b, choice = choice,
+            time = js.performance.now() - epoch))
         if choice == 'quit':
             raise Quit()
 
@@ -170,10 +174,8 @@ async def interact(criterion_names, alts, alt_names, **kwargs):
         # Return the choice.
         return dict(option_a = GT, option_b = LT, equal = EQ)[choice]
 
-    return await avda(
-        asker = asker,
-        alts = alts,
-        **kwargs)
+    prefs = await avda(asker = asker, **kwargs)
+    return prefs, questions
 
 async def stop_web_vda():
     # Terminate any current VDA and clear the log.
