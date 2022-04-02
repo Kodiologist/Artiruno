@@ -1,6 +1,6 @@
 # This module is only run by Pyodide.
 
-import asyncio
+import asyncio, traceback
 import js, pyodide
 from artiruno.vda import avda
 from artiruno.interactive import setup_interactive, results_text
@@ -79,12 +79,13 @@ def initialize_web_interface(mode, criteria = None, alts = None):
 
 async def restart_decision_making(scenario):
     try:
+        E('dm-error-message').textContent = ''
         if not scenario:
             import json
             scenario = json.loads(E('problem-definition').value)
         await _restart_decision_making(scenario)
-    except Exception as e:
-        E('dm').textContent = repr(e)
+    except Exception:
+        E('dm-error-message').textContent = traceback.format_exc()
         return
 
 async def _restart_decision_making(scenario):
