@@ -11,6 +11,10 @@ pyodide_version = re.search('pyodide/(v[^/]+)',
 
 td = Path('/tmp/artiruno_pyodide_testing_SNtl1aBcvhoD5PO8upr4')
 td.mkdir(exist_ok = True)
+
+if not (td / 'webi.html').exists():
+    (td / 'webi.html').symlink_to(Path('webi.html').resolve())
+
 subprocess.check_call(['tar',
     '--create', '--auto-compress',
     '--file', td / 'artiruno_for_pyodide.tar.gz',
@@ -48,4 +52,6 @@ print(f'''Now launch a test server with
     python3 -m http.server --bind 127.0.0.1 --dir {td}
 open the page with
     "$BROWSER" http://0.0.0.0:8000/page.html
-and check the browser console for pytest's output.''')
+and check the browser console for pytest's output.
+To try the web interface, go to
+    "$BROWSER" http://0.0.0.0:8000/webi.html''')
