@@ -15,11 +15,22 @@ td.mkdir(exist_ok = True)
 if not (td / 'webi.html').exists():
     (td / 'webi.html').symlink_to(Path('webi.html').resolve())
 
-subprocess.check_call(['tar',
-    '--create', '--auto-compress',
-    '--file', td / 'artiruno_for_pyodide.tar.gz',
-    '--exclude', '__pycache__',
-    *'artiruno conftest.py examples pytest.ini tests setup.py'.split()])
+# Create the code archive for Pyodide, temporarily rewriting
+# `__init__.py` to contain the Git commit hash.
+initpy = Path('artiruno/__init__.py')
+initpy_was = initpy.read_text()
+try:
+    initpy.write_text(initpy_was + '\ngit_commit = {!r}'.format(
+        subprocess.run(
+            ('git', 'log', '-1', '--format=%H'),
+            check = True, capture_output = True, encoding = 'ASCII').stdout.strip()))
+    subprocess.check_call(['tar',
+        '--create', '--auto-compress',
+        '--file', td / 'artiruno_for_pyodide.tar.gz',
+        '--exclude', '__pycache__',
+        *'artiruno conftest.py examples pytest.ini tests setup.py'.split()])
+finally:
+    initpy.write_text(initpy_was)
 
 page = '''
     <!DOCTYPE html>
