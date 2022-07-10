@@ -161,10 +161,12 @@ async def interact(criterion_names, epoch, **kwargs):
             E(button).addEventListener('click', callback)
 
         # Wait for the user to click a button.
+        time_onset = js.performance.now() - epoch
         choice = await get_signal('choice')
         questions.append(dict(
             a = a, b = b, choice = choice,
-            time = js.performance.now() - epoch))
+            time_onset = time_onset,
+            time_responded = js.performance.now() - epoch))
         if choice == 'quit':
             raise Quit()
 
