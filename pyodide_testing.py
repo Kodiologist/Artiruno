@@ -1,7 +1,10 @@
 # Set up the test suite for running it with Pyodide.
 # Command-line arguments are passed to `pytest`.
-# N.B. `--slow` on Firefox takes about 15 minutes on my fairly beefy
-# laptop, vs. less than a tenth of that with native CPython.
+# (N.B. `--slow` on Firefox takes about 15 minutes on my fairly beefy
+# laptop, vs. less than a tenth of that with native CPython.)
+# Some files produced by this program are also used for testing and
+# deploying the human-subjects task; this program is invoked by the
+# task's deployment script.
 
 import sys, tempfile, subprocess, re
 from pathlib import Path
@@ -59,10 +62,11 @@ page = '''
     .replace('PYV', pyodide_version)
     .replace('ARGS', repr(sys.argv[1:])))
 
-print(f'''Now launch a test server with
-    python3 -m http.server --bind 127.0.0.1 --dir {td}
-open the page with
-    "$BROWSER" http://0.0.0.0:8000/page.html
-and check the browser console for pytest's output.
-To try the web interface, go to
-    "$BROWSER" http://0.0.0.0:8000/webi.html''')
+if not globals().get('quiet'):
+    print(f'''Now launch a test server with
+        python3 -m http.server --bind 127.0.0.1 --dir {td}
+    open the page with
+        "$BROWSER" http://0.0.0.0:8000/page.html
+    and check the browser console for pytest's output.
+    To try the web interface, go to
+        "$BROWSER" http://0.0.0.0:8000/webi.html''')
