@@ -112,13 +112,13 @@ def main():
     prefs, n_questions = interact(**interact_args)
     print(results_text(scenario, prefs, alts, n_questions, namer))
 
-    try:
-        import graphviz
-    except ModuleNotFoundError:
-        print('The Python module `graphviz` is not installed. '
-            'No graph for you.')
-        return
-    from tempfile import mktemp
-    (prefs.get_subset(alts)
-        .graph(namer = namer)
-        .render(filename = mktemp(), format = 'png', view = True))
+#     try:
+#         import graphviz
+#     except ModuleNotFoundError:
+#         print('The Python module `graphviz` is not installed. '
+#             'No graph for you.')
+#         return
+#     from tempfile import mktemp
+#     (prefs.get_subset(alts)
+#         .graph(namer = namer)
+#         .render(filename = mktemp(), format = 'png', view = True))

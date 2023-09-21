@@ -63,14 +63,17 @@ async def avda(
         allowed_pairs_callback(allowed_pairs)
 
         to_try = set(choose2(sorted(alts, key = num_item)))
+        print(f'to_try starts at {len(to_try)}')
 
         while True:
 
             if find_best and len(prefs.extreme(find_best, alts)) >= find_best:
+                print('returning')
                 return prefs
 
             # Don't ask about pairs we already know.
             to_try = {x for x in to_try if prefs.cmp(*x) == IC}
+            print(f'IC pairs: {len(to_try)}')
 
             if find_best:
                 # Don't compare alternatives that can't be in the
@@ -82,19 +85,26 @@ async def avda(
                 to_try = {(a, b)
                     for a, b in to_try
                     if a not in not_best and b not in not_best}
+                print(f'possible: {len(to_try)}')
 
             if not to_try:
                 if any(prefs.cmp(a, b) == IC for a, b in choose2(alts)):
+                    print('to_try exhausted; breaking')
                     break
+                print('to_try exhausted; returning')
                 return prefs
 
             a, b = max(to_try, key = lambda pair:
                 (num_item(pair[0]), num_item(pair[1])))
+            print('picked from to_try:')
+            print(' -', a)
+            print(' -', b)
             to_try.remove((a, b))
 
             cs = frozenset({ci
                 for ci in range(len(criteria))
                 if a[ci] != b[ci]})
+            print(f'cs set to: {cs}')
             try:
                 async def f(rel, cs1, cs2):
                     if not cs1:
@@ -108,11 +118,14 @@ async def avda(
                             continue
                         for c1 in combinations(sorted(cs1), size1):
                             for c2 in combinations(sorted(cs2), size2):
+                                print(f'get_pref(dev_from_ref({c1}, a), dev_from_ref({c2}, b)')
                                 p = await get_pref(dev_from_ref(c1, a), dev_from_ref(c2, b))
+                                print('   ', p)
                                 if rel == EQ or p in (EQ, rel):
                                     await f(rel or p, cs1.difference(c1), cs2.difference(c2))
                 await f(EQ, cs, cs)
             except Jump as j:
+                print('segmentwise learned:', j.value)
                 prefs.learn(a, b, j.value)
             except Abort:
                 return prefs
