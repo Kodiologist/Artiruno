@@ -168,6 +168,33 @@ def test_big_item_space():
         max_dev = 3)
     assert prefs.cmp(tuple(alts[0]), tuple(alts[1])) == LT
 
+def test_find_best_early_bailout():
+    '''VDA ends immediately once a `find_best` criterion is satisfied,
+    so if this test is slow, it's a bug.'''
+
+    n_criteria = 10_000
+
+    criteria = [(0, 1, 2)] * n_criteria
+    alts = [[0] * n_criteria for _ in range(4)]
+    # - Alt 0 dominates alts 1, 2, 3
+    # - Alt 1 dominates alts 2, 3
+    # - Alt 2 and 3 are not comparable by dominance
+    alts[0][0] = 2
+    alts[0][1] = 2
+    alts[1][1] = 2
+    alts[1][0] = 1
+    alts[2][0] = 1
+    alts[3][1] = 1
+    alts = list(map(tuple, alts))
+
+    prefs = vda(
+        criteria = criteria,
+        alts = alts,
+        asker = asker_stub,
+        find_best = 2,
+        max_dev = 2 * n_criteria)
+    assert prefs.extreme(2, among = alts) == {alts[0], alts[1]}
+
 def all_choice_seqs(
         criteria, alts = None, find_best = 1,
         max_dev = 2):

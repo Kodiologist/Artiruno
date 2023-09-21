@@ -66,7 +66,7 @@ async def avda(
 
         while True:
 
-            if find_best and len(prefs.maxes(alts)) >= find_best:
+            if find_best and len(prefs.extreme(find_best, alts)) >= find_best:
                 return prefs
 
             # Don't ask about pairs we already know.
