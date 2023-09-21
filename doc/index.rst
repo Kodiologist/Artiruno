@@ -82,3 +82,5 @@ Bibliography
     <p>Ashikhmin, I., & Furems, E. (2005). UniComBOS—Intelligent decision support system for multi-criteria comparison and choice. <i>Journal of Multi-Criteria Decision Analysis, 13</i>, 147–157. <code>doi:10.1002/mcda.380</code>
 
     <p>Larichev, O. I., & Moshkovich, H. M. (1995). ZAPROS-LM—A method and system for ordering multiattribute alternatives. <i>European Journal of Operational Research, 82</i>, 503–521. <code>doi:10.1016/0377-2217(93)E0143-L</code>
+
+    <p>Moshkovich, H. M., & Mechitov, A. I. (2018). Selection of a faculty member in academia: A case for verbal decision analysis. <i>International Journal of Business and Systems Research, 12</i>, 343–363.<code>doi:10.1504/IJBSR.2018.10011350</code>

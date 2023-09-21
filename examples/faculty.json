@@ -1,0 +1,96 @@
+{
+
+"comment":
+    "From Moshkovich and Mechitov (2018), appendices 2 and 3. Note the reversal of criterion levels. Candidates identical to a previous candidate are omitted.",
+
+"find_best": 2,
+
+"criteria": {
+    "Ability to teach the subject": ["Below average", "Average", "Above average"],
+    "Ability to teach students": ["Below average", "Average", "Above average"],
+    "Ability to carry out successful research": ["Below average", "Average", "Above average"],
+    "Match of research interests to the department needs": ["Below average", "Average", "Above average"]},
+
+"alts": {
+    "Candidates 1,7,9,15,30": {
+        "Ability to teach the subject": "Above average",
+        "Ability to teach students": "Below average",
+        "Ability to carry out successful research": "Average",
+        "Match of research interests to the department needs": "Above average"},
+    "Candidates 2,21,25,32": {
+        "Ability to teach the subject": "Average",
+        "Ability to teach students": "Above average",
+        "Ability to carry out successful research": "Below average",
+        "Match of research interests to the department needs": "Average"},
+    "Candidate 3": {
+        "Ability to teach the subject": "Above average",
+        "Ability to teach students": "Average",
+        "Ability to carry out successful research": "Above average",
+        "Match of research interests to the department needs": "Below average"},
+    "Candidate 4": {
+        "Ability to teach the subject": "Above average",
+        "Ability to teach students": "Above average",
+        "Ability to carry out successful research": "Above average",
+        "Match of research interests to the department needs": "Average"},
+    "Candidates 5,17,19,23,29": {
+        "Ability to teach the subject": "Average",
+        "Ability to teach students": "Average",
+        "Ability to carry out successful research": "Below average",
+        "Match of research interests to the department needs": "Above average"},
+    "Candidates 6,10": {
+        "Ability to teach the subject": "Above average",
+        "Ability to teach students": "Above average",
+        "Ability to carry out successful research": "Below average",
+        "Match of research interests to the department needs": "Average"},
+    "Candidates 8,20,28": {
+        "Ability to teach the subject": "Average",
+        "Ability to teach students": "Below average",
+        "Ability to carry out successful research": "Average",
+        "Match of research interests to the department needs": "Average"},
+    "Candidate 11": {
+        "Ability to teach the subject": "Above average",
+        "Ability to teach students": "Average",
+        "Ability to carry out successful research": "Average",
+        "Match of research interests to the department needs": "Above average"},
+    "Candidate 12": {
+        "Ability to teach the subject": "Average",
+        "Ability to teach students": "Above average",
+        "Ability to carry out successful research": "Above average",
+        "Match of research interests to the department needs": "Average"},
+    "Candidate 13": {
+        "Ability to teach the subject": "Average",
+        "Ability to teach students": "Average",
+        "Ability to carry out successful research": "Average",
+        "Match of research interests to the department needs": "Average"},
+    "Candidate 14": {
+        "Ability to teach the subject": "Below average",
+        "Ability to teach students": "Average",
+        "Ability to carry out successful research": "Above average",
+        "Match of research interests to the department needs": "Above average"},
+    "Candidate 16": {
+        "Ability to teach the subject": "Average",
+        "Ability to teach students": "Average",
+        "Ability to carry out successful research": "Above average",
+        "Match of research interests to the department needs": "Average"},
+    "Candidates 18,24,26": {
+        "Ability to teach the subject": "Below average",
+        "Ability to teach students": "Above average",
+        "Ability to carry out successful research": "Above average",
+        "Match of research interests to the department needs": "Below average"},
+    "Candidate 22": {
+        "Ability to teach the subject": "Above average",
+        "Ability to teach students": "Above average",
+        "Ability to carry out successful research": "Average",
+        "Match of research interests to the department needs": "Average"},
+    "Candidate 27": {
+        "Ability to teach the subject": "Above average",
+        "Ability to teach students": "Average",
+        "Ability to carry out successful research": "Above average",
+        "Match of research interests to the department needs": "Average"},
+    "Candidate 31": {
+        "Ability to teach the subject": "Above average",
+        "Ability to teach students": "Average",
+        "Ability to carry out successful research": "Average",
+        "Match of research interests to the department needs": "Average"}}
+
+}
