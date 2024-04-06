@@ -2,12 +2,20 @@
   :alt: Art by Ken Sugimori
   :align: center
 
+.. role:: html(raw)
+   :format: html
+
 Artiruno is a program to help you make decisions with verbal decision analysis. It's also a Python library with a class for `preordered sets`_ that should be just as useful outside the context of decision-making.
 
 - `Try Artiruno in your web browser <http://arfer.net/projects/artiruno/webi>`_
 - `Documentation <http://arfer.net/projects/artiruno/doc>`_
 
 .. _`preordered sets`: https://en.wikipedia.org/wiki/Preorder
+
+Publication
+============================================================
+
+Arfer, K. B. (2024). Artiruno: A free-software tool for multi-criteria decision-making with verbal decision analysis. *Journal of Multi-Criteria Decision Analysis, 31*. ``doi:10.1002/mcda.1827``. Retrieved from http://arfer.net/projects/artiruno/paper
 
 License
 ============================================================
